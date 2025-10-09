@@ -1,5 +1,5 @@
-import { v4 as uuidv4 } from 'uuid';
 import { Node, Edge } from 'reactflow';
+import { v4 as uuidv4 } from 'uuid';
 
 // Attack Flow V3 format interfaces based on the builder source
 interface DiagramObjectExport {
@@ -172,10 +172,10 @@ export class AttackFlowV3Exporter {
       instance: flowInstance,
       objects: [], // Will be populated after all objects are created
       properties: [
-        ["name", "Attack Flow Export from FlowViz"],
-        ["description", "This attack flow was exported from FlowViz and converted to Attack Flow V3 format"],
+        ["name", "Attack Flow Export from ThreatFlow"],
+        ["description", "This attack flow was exported from ThreatFlow and converted to Attack Flow V3 format"],
         ["author", [
-          ["name", "FlowViz User"],
+          ["name", "ThreatFlow User"],
           ["identity_class", "individual"],
           ["contact_information", ""]
         ]],
@@ -194,7 +194,7 @@ export class AttackFlowV3Exporter {
     const nodeType = nodeData?.type || node.type;
     const instanceId = this.nodeIdMap.get(node.id);
     
-    if (!instanceId) return [];
+    if (!instanceId) {return [];}
 
     // Map node type to Attack Flow template
     const templateId = this.mapNodeTypeToTemplate(nodeType);
@@ -267,10 +267,10 @@ export class AttackFlowV3Exporter {
   }
 
   /**
-   * Map FlowViz confidence values to Attack Flow confidence values
+   * Map ThreatFlow confidence values to Attack Flow confidence values
    */
   private mapConfidenceToAttackFlow(confidence: string | undefined): string {
-    if (!confidence) return "probable"; // Default
+    if (!confidence) {return "probable";} // Default
 
     switch (confidence.toLowerCase()) {
       case 'low':
@@ -357,7 +357,7 @@ export class AttackFlowV3Exporter {
     const sourceNodeId = this.nodeIdMap.get(edge.source);
     const targetNodeId = this.nodeIdMap.get(edge.target);
     
-    if (!sourceNodeId || !targetNodeId) return objects;
+    if (!sourceNodeId || !targetNodeId) {return objects;}
 
     // Find the specific anchor objects for source (bottom) and target (top) nodes
     // These should have been created and added to this.objects already
@@ -428,8 +428,8 @@ export class AttackFlowV3Exporter {
     };
 
     // Add latches to the anchors
-    if (!sourceAnchor.latches) sourceAnchor.latches = [];
-    if (!targetAnchor.latches) targetAnchor.latches = [];
+    if (!sourceAnchor.latches) {sourceAnchor.latches = [];}
+    if (!targetAnchor.latches) {targetAnchor.latches = [];}
     sourceAnchor.latches.push(sourceLatchId);
     targetAnchor.latches.push(targetLatchId);
 

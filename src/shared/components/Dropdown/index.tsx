@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Menu,
   MenuItem,
@@ -10,9 +9,10 @@ import {
   ListItemText,
   styled,
   FormControl,
-  InputLabel,
 } from '@mui/material';
-import { flowVizTheme } from '../../theme/flowviz-theme';
+import React from 'react';
+
+import { threatFlowTheme } from '../../theme/threatflow-theme';
 
 // ============= Base Styling Configuration =============
 
@@ -20,17 +20,17 @@ import { flowVizTheme } from '../../theme/flowviz-theme';
 export const dropdownMenuStyles: Partial<MenuProps> = {
   PaperProps: {
     sx: {
-      background: flowVizTheme.colors.menu.dialog,
-      border: `1px solid ${flowVizTheme.colors.surface.border.default}`,
-      borderRadius: `${flowVizTheme.borderRadius.md}px`,
-      backdropFilter: flowVizTheme.effects.blur.heavy,
-      boxShadow: flowVizTheme.effects.shadows.md,
+      background: threatFlowTheme.colors.menu.dialog,
+      border: `1px solid ${threatFlowTheme.colors.surface.border.default}`,
+      borderRadius: `${threatFlowTheme.borderRadius.md}px`,
+      backdropFilter: threatFlowTheme.effects.blur.heavy,
+      boxShadow: threatFlowTheme.effects.shadows.md,
       minWidth: '180px',
     }
   },
   MenuListProps: {
     sx: {
-      padding: `${flowVizTheme.spacing.sm - 2}px`,
+      padding: `${threatFlowTheme.spacing.sm - 2}px`,
     }
   }
 };
@@ -39,17 +39,17 @@ export const dropdownMenuStyles: Partial<MenuProps> = {
 export const dropdownMenuStylesDark: Partial<MenuProps> = {
   PaperProps: {
     sx: {
-      background: flowVizTheme.colors.menu.appBar,
-      border: `1px solid ${flowVizTheme.colors.surface.border.default}`,
-      borderRadius: `${flowVizTheme.borderRadius.md}px`,
-      backdropFilter: flowVizTheme.effects.blur.heavy,
-      boxShadow: flowVizTheme.effects.shadows.md,
+      background: threatFlowTheme.colors.menu.appBar,
+      border: `1px solid ${threatFlowTheme.colors.surface.border.default}`,
+      borderRadius: `${threatFlowTheme.borderRadius.md}px`,
+      backdropFilter: threatFlowTheme.effects.blur.heavy,
+      boxShadow: threatFlowTheme.effects.shadows.md,
       minWidth: '180px',
     }
   },
   MenuListProps: {
     sx: {
-      padding: `${flowVizTheme.spacing.sm - 2}px`,
+      padding: `${threatFlowTheme.spacing.sm - 2}px`,
     }
   }
 };
@@ -57,24 +57,24 @@ export const dropdownMenuStylesDark: Partial<MenuProps> = {
 // ============= Dropdown Menu Item Component =============
 
 export const DropdownMenuItem = styled(MenuItem)({
-  borderRadius: `${flowVizTheme.borderRadius.sm}px`,
-  marginBottom: `${flowVizTheme.spacing.xs / 2}px`,
-  padding: `${flowVizTheme.spacing.sm + 2}px ${flowVizTheme.spacing.sm + 6}px`,
-  color: flowVizTheme.colors.text.primary,
+  borderRadius: `${threatFlowTheme.borderRadius.sm}px`,
+  marginBottom: `${threatFlowTheme.spacing.xs / 2}px`,
+  padding: `${threatFlowTheme.spacing.sm + 2}px ${threatFlowTheme.spacing.sm + 6}px`,
+  color: threatFlowTheme.colors.text.primary,
   fontSize: '14px',
   fontWeight: 500,
-  transition: flowVizTheme.motion.fast,
+  transition: threatFlowTheme.motion.fast,
   
   '&:hover': {
-    backgroundColor: flowVizTheme.colors.surface.hover,
-    color: flowVizTheme.colors.text.primary,
+    backgroundColor: threatFlowTheme.colors.surface.hover,
+    color: threatFlowTheme.colors.text.primary,
   },
   
   '&.Mui-selected': {
-    backgroundColor: flowVizTheme.colors.surface.active,
+    backgroundColor: threatFlowTheme.colors.surface.active,
     
     '&:hover': {
-      backgroundColor: flowVizTheme.colors.surface.active,
+      backgroundColor: threatFlowTheme.colors.surface.active,
     }
   },
   
@@ -85,11 +85,11 @@ export const DropdownMenuItem = styled(MenuItem)({
 
 // Danger variant for destructive actions
 export const DropdownMenuItemDanger = styled(DropdownMenuItem)({
-  color: flowVizTheme.colors.status.error.text,
+  color: threatFlowTheme.colors.status.error.text,
   
   '&:hover': {
-    backgroundColor: flowVizTheme.colors.status.error.bg,
-    color: flowVizTheme.colors.status.error.accent,
+    backgroundColor: threatFlowTheme.colors.status.error.bg,
+    color: threatFlowTheme.colors.status.error.accent,
   },
 });
 
@@ -129,41 +129,41 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
 // ============= Dropdown Select Component =============
 
 export const DropdownSelect = styled(Select)<SelectProps>({
-  color: flowVizTheme.colors.text.primary,
-  backgroundColor: flowVizTheme.colors.background.glass,
-  borderRadius: `${flowVizTheme.borderRadius.md}px`,
+  color: threatFlowTheme.colors.text.primary,
+  backgroundColor: threatFlowTheme.colors.background.glass,
+  borderRadius: `${threatFlowTheme.borderRadius.md}px`,
   fontSize: '14px',
   fontWeight: 500,
   
   '& .MuiOutlinedInput-notchedOutline': {
-    borderColor: flowVizTheme.colors.surface.border.default,
-    transition: flowVizTheme.motion.fast,
+    borderColor: threatFlowTheme.colors.surface.border.default,
+    transition: threatFlowTheme.motion.fast,
   },
   
   '&:hover': {
-    backgroundColor: flowVizTheme.colors.background.glassLight,
+    backgroundColor: threatFlowTheme.colors.background.glassLight,
     
     '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: flowVizTheme.colors.surface.border.emphasis,
+      borderColor: threatFlowTheme.colors.surface.border.emphasis,
     }
   },
   
   '&.Mui-focused': {
-    backgroundColor: flowVizTheme.colors.background.glassLight,
+    backgroundColor: threatFlowTheme.colors.background.glassLight,
     
     '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: flowVizTheme.colors.surface.border.focus,
+      borderColor: threatFlowTheme.colors.surface.border.focus,
       borderWidth: 1,
     }
   },
   
   '& .MuiSelect-icon': {
-    color: flowVizTheme.colors.text.secondary,
-    transition: flowVizTheme.motion.fast,
+    color: threatFlowTheme.colors.text.secondary,
+    transition: threatFlowTheme.motion.fast,
   },
   
   '&:hover .MuiSelect-icon': {
-    color: flowVizTheme.colors.text.primary,
+    color: threatFlowTheme.colors.text.primary,
   },
 });
 
@@ -189,8 +189,8 @@ export const DropdownMenuItemWithIcon: React.FC<DropdownMenuItemWithIconProps> =
         sx={{ 
           minWidth: '36px',
           color: variant === 'danger' 
-            ? flowVizTheme.colors.status.error.text
-            : flowVizTheme.colors.text.secondary,
+            ? threatFlowTheme.colors.status.error.text
+            : threatFlowTheme.colors.text.secondary,
         }}
       >
         {icon}
@@ -211,18 +211,18 @@ export const DropdownMenuItemWithIcon: React.FC<DropdownMenuItemWithIconProps> =
 
 export const DropdownFormControl = styled(FormControl)({
   '& .MuiInputLabel-root': {
-    color: flowVizTheme.colors.text.secondary,
+    color: threatFlowTheme.colors.text.secondary,
     fontSize: '14px',
     fontWeight: 500,
     backgroundColor: 'transparent',
     
     '&.Mui-focused': {
-      color: flowVizTheme.colors.text.primary,
+      color: threatFlowTheme.colors.text.primary,
     },
     
     '&.MuiInputLabel-shrink': {
       backgroundColor: 'transparent',
-      padding: `0 ${flowVizTheme.spacing.xs}px`,
+      padding: `0 ${threatFlowTheme.spacing.xs}px`,
     },
   },
 });
@@ -233,7 +233,7 @@ export const DropdownSelectCompact = styled(DropdownSelect)({
   fontSize: '13px',
   
   '& .MuiSelect-select': {
-    padding: `${flowVizTheme.spacing.sm}px ${flowVizTheme.spacing.md}px`,
+    padding: `${threatFlowTheme.spacing.sm}px ${threatFlowTheme.spacing.md}px`,
   },
 });
 

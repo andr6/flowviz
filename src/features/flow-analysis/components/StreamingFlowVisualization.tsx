@@ -1,3 +1,4 @@
+import { toPng } from 'html-to-image';
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import {
   ReactFlow,
@@ -10,26 +11,41 @@ import {
   MarkerType,
   useReactFlow
 } from 'reactflow';
-import { toPng } from 'html-to-image';
-import { STIXBundleExporter } from '../../flow-export/services/stixBundleExporter';
-import { AttackFlowV3Exporter } from '../../flow-export/services/attackFlowV3Exporter';
+
 import 'reactflow/dist/style.css';
 import { Box } from '@mui/material';
-import ErrorBoundary from '../../../shared/components/ErrorBoundary';
 
-import { THEME, NODE_TYPES } from './constants';
-import { useNodeSelection } from './hooks/useNodeSelection';
-import { StreamingDirectFlowClient } from '../services/streamingDirectFlowClient';
-import { ArticleContent } from '../services/types';
-import { getLayoutedElements } from './utils/layoutUtils';
+import ErrorBoundary from '../../../shared/components/ErrorBoundary';
+import LoadingIndicator from '../../../shared/components/LoadingIndicator';
+import { AttackFlowV3Exporter } from '../../flow-export/services/attackFlowV3Exporter';
+import { STIXBundleExporter } from '../../flow-export/services/stixBundleExporter';
+import { IOCDisplayPanel } from '../../ioc-analysis/components/IOCDisplayPanel';
+import { IOCAnalysisService } from '../../ioc-analysis/services/IOCAnalysisService';
+import { IOCIOAAnalysisResult } from '../../ioc-analysis/types/IOC';
+import { confidenceIndicatorService } from '../services/confidenceIndicators';
+import { StreamingDirectFlowClient, ProviderSettings } from '../services/streamingDirectFlowClient';
 
 import NodeDetailsPanel from './components/NodeDetailsPanel/NodeDetailsPanel';
+
+// Import new Interactive Visualization Improvements
+import { THEME, NODE_TYPES, SIMPLIFIED_NODE_TYPES } from './constants';
+import { AdvancedFilterPanel } from './controls/AdvancedFilterPanel';
+import { ScreenshotModeControls } from './controls/ScreenshotModeControls';
+import ViewSwitcher, { ViewMode } from './controls/ViewSwitcher';
+import EnhancedVisualizationControls from './EnhancedVisualizationControls';
 import FloatingConnectionLine from './edges/FloatingConnectionLine';
+import { useNodeSelection } from './hooks/useNodeSelection';
 import { useStoryMode } from './hooks/useStoryMode';
-import LoadingIndicator from '../../../shared/components/LoadingIndicator';
+import { ConfidenceOverlay } from './overlays/ConfidenceOverlay';
+import { InteractiveLegend } from './overlays/InteractiveLegend';
+import { getLayoutedElements } from './utils/layoutUtils';
+import IOCView from './views/IOCView';
+import TabbedTacticView from './views/TabbedTacticView';
+import TimelineView from './views/TimelineView';
 
 export interface StreamingFlowVisualizationProps {
-  url: string; // Can be URL or text content
+  url: string; // Can be URL, text content, or PDF file
+  pdfFile?: File; // Optional PDF file
   loadedFlow?: {
     nodes: any[];
     edges: any[];
@@ -53,10 +69,29 @@ export interface StreamingFlowVisualizationProps {
   edgeStyle?: string;
   edgeCurve?: string;
   storyModeSpeed?: number;
+  showConfidenceOverlay?: boolean;
+  showScreenshotControls?: boolean;
+  providerSettings?: ProviderSettings;
+  // New Interactive Visualization props
+  enableAdvancedVisualization?: boolean;
+  collaborativeMode?: boolean;
+  currentUser?: {
+    id: string;
+    name: string;
+    color: string;
+  };
+  savedFlows?: Array<{
+    id: string;
+    name: string;
+    nodes: any[];
+    edges: any[];
+    createdAt: string;
+  }>;
 }
 
 const StreamingFlowVisualizationContent: React.FC<StreamingFlowVisualizationProps> = ({ 
   url,
+  pdfFile,
   loadedFlow,
   onExportAvailable,
   onClearAvailable,
@@ -70,16 +105,116 @@ const StreamingFlowVisualizationContent: React.FC<StreamingFlowVisualizationProp
   edgeColor = 'default',
   edgeStyle = 'solid',
   edgeCurve = 'smooth',
-  storyModeSpeed = 3
+  storyModeSpeed = 3,
+  showConfidenceOverlay = false,
+  showScreenshotControls = false,
+  providerSettings,
+  enableAdvancedVisualization = true,
+  collaborativeMode = false,
+  currentUser,
+  savedFlows = []
 }) => {
   const reactFlowInstance = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
+  const [iocAnalysisResult, setIocAnalysisResult] = useState<IOCIOAAnalysisResult | null>(null);
+  const [showIocPanel, setShowIocPanel] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('graph');
+  const [useSimplifiedNodes, setUseSimplifiedNodes] = useState(false);
+  const [nodeConfidences, setNodeConfidences] = useState([]);
+  const [edgeConfidences, setEdgeConfidences] = useState([]);
+  const [screenshotTaken, setScreenshotTaken] = useState<string | null>(null);
+  
+  // Interactive Visualization state
+  const [showAdvancedVisualization, setShowAdvancedVisualization] = useState(false);
+  const [showInteractiveLegend, setShowInteractiveLegend] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [currentVisualizationMode, setCurrentVisualizationMode] = useState<'2d' | '3d' | 'split' | 'hierarchical' | 'collaborative' | 'diff'>('2d');
+  const [appliedFilters, setAppliedFilters] = useState<any>(null);
+  const [filteredNodes, setFilteredNodes] = useState<any[]>([]);
+  const [filteredEdges, setFilteredEdges] = useState<any[]>([]);
+  
+  // IOC Analysis service instance
+  const iocAnalysisServiceRef = useRef<IOCAnalysisService | null>(null);
+  
+  // Calculate confidence indicators when nodes/edges change
+  useEffect(() => {
+    if (nodes.length > 0) {
+      confidenceIndicatorService.calculateAllNodeConfidences(nodes);
+      confidenceIndicatorService.calculateAllEdgeConfidences(edges, nodes);
+      setNodeConfidences(confidenceIndicatorService.getAllNodeConfidences());
+      setEdgeConfidences(confidenceIndicatorService.getAllEdgeConfidences());
+    }
+  }, [nodes, edges]);
+  
+  // Apply filters to nodes and edges
+  useEffect(() => {
+    if (appliedFilters && nodes.length > 0) {
+      // Apply advanced filters
+      const filtered = nodes.filter(node => {
+        if (appliedFilters.timeRange) {
+          const nodeTime = new Date(node.data?.timestamp || Date.now());
+          if (nodeTime < appliedFilters.timeRange.start || nodeTime > appliedFilters.timeRange.end) {
+            return false;
+          }
+        }
+        if (appliedFilters.severityLevels?.length > 0) {
+          const severity = node.data?.severity || 'medium';
+          if (!appliedFilters.severityLevels.includes(severity)) {
+            return false;
+          }
+        }
+        if (appliedFilters.actors?.length > 0) {
+          const actor = node.data?.actor || 'unknown';
+          if (!appliedFilters.actors.includes(actor)) {
+            return false;
+          }
+        }
+        if (appliedFilters.techniques?.length > 0) {
+          const technique = node.data?.technique || '';
+          if (!appliedFilters.techniques.some(t => technique.includes(t))) {
+            return false;
+          }
+        }
+        return true;
+      });
+      
+      const filteredNodeIds = new Set(filtered.map(n => n.id));
+      const filteredEdgeList = edges.filter(edge => 
+        filteredNodeIds.has(edge.source) && filteredNodeIds.has(edge.target)
+      );
+      
+      setFilteredNodes(filtered);
+      setFilteredEdges(filteredEdgeList);
+    } else {
+      setFilteredNodes(nodes);
+      setFilteredEdges(edges);
+    }
+  }, [appliedFilters, nodes, edges]);
+  
+  // Initialize IOC analysis service
+  useEffect(() => {
+    if (!iocAnalysisServiceRef.current) {
+      iocAnalysisServiceRef.current = new IOCAnalysisService();
+    }
+  }, []);
+
+  // Auto-switch to simplified nodes for performance
+  useEffect(() => {
+    if (nodes.length > 30) {
+      setUseSimplifiedNodes(true);
+      if (viewMode === 'graph' && nodes.length > 50) {
+        setViewMode('tactic'); // Auto-switch to tactic view for very large graphs
+      }
+    } else {
+      setUseSimplifiedNodes(false);
+    }
+  }, [nodes.length, viewMode]);
   
   // Determine content type based on URL format
   const contentType = useMemo(() => {
-    if (!url) return 'url';
+    if (!url) {return 'url';}
     return url.startsWith('http://') || url.startsWith('https://') ? 'url' : 'text';
   }, [url]);
   
@@ -165,6 +300,13 @@ const StreamingFlowVisualizationContent: React.FC<StreamingFlowVisualizationProp
     closeNodeDetails
   } = useNodeSelection();
 
+  // Wrapper function for views that only pass a node (not an event)
+  const handleNodeSelect = useCallback((node: any) => {
+    if (node?.data) {
+      handleNodeClick({} as React.MouseEvent, node);
+    }
+  }, [handleNodeClick]);
+
   // Story mode hook
   const {
     storyState,
@@ -208,7 +350,9 @@ const StreamingFlowVisualizationContent: React.FC<StreamingFlowVisualizationProp
     backgroundColor: THEME.background.primary
   }), []);
 
-  const nodeTypes = useMemo(() => NODE_TYPES, []);
+  const nodeTypes = useMemo(() => {
+    return useSimplifiedNodes ? SIMPLIFIED_NODE_TYPES : NODE_TYPES;
+  }, [useSimplifiedNodes]);
 
 
   // Handle loading saved flow
@@ -244,7 +388,7 @@ const StreamingFlowVisualizationContent: React.FC<StreamingFlowVisualizationProp
 
   // Start streaming when URL is provided
   useEffect(() => {
-    if (!url || isStreaming || streamingClientRef.current || loadedFlow) return;
+    if (!url || isStreaming || streamingClientRef.current || loadedFlow) {return;}
 
     const startStreaming = async () => {
       setIsStreaming(true);
@@ -255,7 +399,7 @@ const StreamingFlowVisualizationContent: React.FC<StreamingFlowVisualizationProp
       
       streamingClientRef.current = new StreamingDirectFlowClient();
       
-      await streamingClientRef.current.extractDirectFlowStreaming(url, {
+      await streamingClientRef.current.extractDirectFlowStreaming(pdfFile || url, {
         onProgress: (stage, message) => {
           onProgress?.(stage, message);
         },
@@ -298,6 +442,30 @@ const StreamingFlowVisualizationContent: React.FC<StreamingFlowVisualizationProp
           });
         },
         
+        onIOCAnalysis: async (iocAnalysis) => {
+          console.log('🔍 Processing IOC/IOA data from stream...');
+          try {
+            if (iocAnalysisServiceRef.current) {
+              // Process the AI-extracted IOC/IOA data
+              const analysisResult = await iocAnalysisServiceRef.current.analyzeContent({
+                text: contentType === 'url' ? '' : url, // Don't analyze URL string for URL content type
+                aiExtractedData: { ioc_analysis: iocAnalysis },
+                metadata: {
+                  source: contentType === 'url' ? url : 'text-content',
+                  title: `ThreatFlow Analysis - ${new Date().toISOString()}`,
+                  tags: ['threatflow', 'streaming-analysis']
+                }
+              });
+              
+              setIocAnalysisResult(analysisResult);
+              setShowIocPanel(true);
+              console.log(`📊 IOC/IOA Analysis complete: ${analysisResult.summary.totalIOCs} IOCs, ${analysisResult.summary.totalIOAs} IOAs`);
+            }
+          } catch (error) {
+            console.error('❌ IOC/IOA processing failed:', error);
+          }
+        },
+        
         onComplete: () => {
           console.log('✅ Streaming completed');
           setIsStreaming(false);
@@ -336,7 +504,7 @@ const StreamingFlowVisualizationContent: React.FC<StreamingFlowVisualizationProp
           onStreamingEnd?.(); // Notify parent that streaming has ended (even on error)
           onError?.(err); // Pass error to parent for snackbar display
         }
-      });
+      }, providerSettings);
     };
 
     startStreaming();
@@ -347,7 +515,7 @@ const StreamingFlowVisualizationContent: React.FC<StreamingFlowVisualizationProp
   
   // Re-layout the graph only during streaming
   useEffect(() => {
-    if (!isStreaming) return; // Early exit if not streaming
+    if (!isStreaming) {return;} // Early exit if not streaming
     
     if (nodes.length > 0 || edges.length > 0) {
       console.log(`🎯 Layout trigger: ${nodes.length} nodes, ${edges.length} edges, streaming: ${isStreaming}`);
@@ -363,7 +531,6 @@ const StreamingFlowVisualizationContent: React.FC<StreamingFlowVisualizationProp
   // Apply layout when needed - ONLY during streaming
   useEffect(() => {
     if (needsLayout && nodes.length > 0 && isStreaming) {
-      console.log(`🎨 Applying layout to ${nodes.length} nodes, ${edges.length} edges`);
       // Apply Dagre layout with side-node post-processing
       const layouted = getLayoutedElements(nodes, edges);
       
@@ -495,7 +662,7 @@ const StreamingFlowVisualizationContent: React.FC<StreamingFlowVisualizationProp
         x_flowviz_metadata: {
           viewport: reactFlowInstance?.getViewport(),
           exportedAt: new Date().toISOString(),
-          tool: 'FlowViz',
+          tool: 'ThreatFlow',
           version: '1.0.0',
           streaming: true
         }
@@ -525,6 +692,10 @@ const StreamingFlowVisualizationContent: React.FC<StreamingFlowVisualizationProp
     setEdges([]);
     setIsStreaming(false);
     
+    // Reset IOC analysis data
+    setIocAnalysisResult(null);
+    setShowIocPanel(false);
+    
     // Reset streaming client
     if (streamingClientRef.current) {
       streamingClientRef.current = null;
@@ -533,8 +704,8 @@ const StreamingFlowVisualizationContent: React.FC<StreamingFlowVisualizationProp
 
   const handleGetSaveData = useCallback(() => {
     return {
-      nodes: nodes,
-      edges: edges,
+      nodes,
+      edges,
       viewport: reactFlowInstance?.getViewport() || { x: 0, y: 0, zoom: 1 }
     };
   }, [nodes, edges, reactFlowInstance]);
@@ -543,19 +714,19 @@ const StreamingFlowVisualizationContent: React.FC<StreamingFlowVisualizationProp
     if (onExportAvailable) {
       onExportAvailable(handleExport);
     }
-  }, [onExportAvailable, handleExport]);
+  }, [onExportAvailable]);
 
   useEffect(() => {
     if (onSaveAvailable) {
       onSaveAvailable(handleGetSaveData);
     }
-  }, [onSaveAvailable, handleGetSaveData]);
+  }, [onSaveAvailable]);
 
   useEffect(() => {
     if (onClearAvailable) {
       onClearAvailable(handleClear);
     }
-  }, [onClearAvailable, handleClear]);
+  }, [onClearAvailable]);
 
   // Notify parent about story mode availability
   useEffect(() => {
@@ -579,7 +750,7 @@ const StreamingFlowVisualizationContent: React.FC<StreamingFlowVisualizationProp
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Only handle keyboard shortcuts when story mode is available
-      if (storyState.steps.length === 0) return;
+      if (storyState.steps.length === 0) {return;}
       
       // Prevent default behavior only for specific keys
       if (event.code === 'Space' || event.code === 'ArrowLeft' || event.code === 'ArrowRight' || event.code === 'Escape') {
@@ -712,6 +883,14 @@ const StreamingFlowVisualizationContent: React.FC<StreamingFlowVisualizationProp
         </Box>
       )}
 
+      {/* View Switcher */}
+      <ViewSwitcher
+        currentView={viewMode}
+        onViewChange={setViewMode}
+        nodeCount={nodes.length}
+        disabled={isStreaming}
+      />
+
       {/* Floating Keyboard Indicator */}
       {keyIndicator && (
         <Box
@@ -779,61 +958,181 @@ const StreamingFlowVisualizationContent: React.FC<StreamingFlowVisualizationProp
         </Box>
       )}
       
-      {/* React Flow Graph */}
-      <Box sx={{ height: '100%' }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={handleNodesChange}
-          onEdgesChange={handleEdgesChange}
-          nodeTypes={nodeTypes}
-          onNodeClick={handleNodeClick}
-          onPaneClick={handlePaneClick}
-          onNodeDragStart={handleNodeDragStart}
-          onNodeDragStop={handleNodeDragStop}
-          onSelectionDragStart={handleSelectionDragStart}
-          onSelectionDragStop={handleSelectionDragStop}
-          nodesDraggable={!isStreaming}
-          nodesConnectable={false}
-          elementsSelectable={true}
-          fitView={false}
-          attributionPosition="bottom-left"
-          connectionLineComponent={FloatingConnectionLine}
-          snapToGrid={false}
-          snapGrid={snapGrid}
-          deleteKeyCode={null}
-          multiSelectionKeyCode={null}
-          panOnDrag={true}
-          selectNodesOnDrag={false}
-          elevateEdgesOnSelect={false}
-          defaultEdgeOptions={defaultEdgeOptions}
-          style={reactFlowStyle}
-          disableKeyboardA11y={true}
-          onlyRenderVisibleElements={true}
-          nodeOrigin={[0.5, 0.5]}
-          minZoom={0.1}
-          maxZoom={4}
-          zoomOnScroll={true}
-          zoomOnPinch={true}
-          zoomOnDoubleClick={true}
-        >
-          <Background
-            color="rgba(255, 255, 255, 0.1)"
-            variant={BackgroundVariant.Dots}
-            gap={20}
-            size={1}
-          />
-          <Controls
-            style={{
-              backgroundColor: THEME.background.secondary,
-              border: THEME.border.default,
-              borderRadius: '8px'
-            }}
-          />
-        </ReactFlow>
-        
-        {/* Loading Indicator - centered in the graph during loading */}
-        <LoadingIndicator isVisible={showLoadingIndicator} contentType={contentType} />
+      {/* Main Visualization Area */}
+      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        {viewMode === 'graph' && (
+          <Box sx={{ flex: 1 }}>
+            <ReactFlow
+              nodes={filteredNodes}
+              edges={filteredEdges}
+              onNodesChange={handleNodesChange}
+              onEdgesChange={handleEdgesChange}
+              nodeTypes={nodeTypes}
+              onNodeClick={handleNodeClick}
+              onPaneClick={handlePaneClick}
+              onNodeDragStart={handleNodeDragStart}
+              onNodeDragStop={handleNodeDragStop}
+              onSelectionDragStart={handleSelectionDragStart}
+              onSelectionDragStop={handleSelectionDragStop}
+              nodesDraggable={!isStreaming}
+              nodesConnectable={false}
+              elementsSelectable={true}
+              fitView={false}
+              attributionPosition="bottom-left"
+              connectionLineComponent={FloatingConnectionLine}
+              snapToGrid={false}
+              snapGrid={snapGrid}
+              deleteKeyCode={null}
+              multiSelectionKeyCode={null}
+              panOnDrag={true}
+              selectNodesOnDrag={false}
+              elevateEdgesOnSelect={false}
+              defaultEdgeOptions={defaultEdgeOptions}
+              style={reactFlowStyle}
+              disableKeyboardA11y={true}
+              onlyRenderVisibleElements={true}
+              nodeOrigin={[0.5, 0.5]}
+              minZoom={0.1}
+              maxZoom={4}
+              zoomOnScroll={true}
+              zoomOnPinch={true}
+              zoomOnDoubleClick={true}
+              panOnScrollMode="free"
+            >
+              <Background
+                color="rgba(255, 255, 255, 0.1)"
+                variant={BackgroundVariant.Dots}
+                gap={20}
+                size={1}
+              />
+              <Controls
+                style={{
+                  backgroundColor: THEME.background.secondary,
+                  border: THEME.border.default,
+                  borderRadius: '8px'
+                }}
+                showZoom={true}
+                showFitView={true}
+                showInteractive={false}
+                position="bottom-right"
+              />
+            </ReactFlow>
+            
+            {/* Enhanced Visualization Controls */}
+            <EnhancedVisualizationControls
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={setNodes}
+              onEdgesChange={setEdges}
+              visible={!isStreaming && nodes.length > 0}
+              enableClustering={true}
+              enableAnimation={true}
+              enableScreenshots={true}
+              enableMinimap={true}
+              enableAdvancedFilters={true}
+            />
+            
+            {/* Loading Indicator - centered in the graph during loading */}
+            <LoadingIndicator isVisible={showLoadingIndicator} contentType={contentType} />
+            
+            {/* Confidence Overlay */}
+            <ConfidenceOverlay
+              visible={showConfidenceOverlay}
+              onToggleVisibility={() => {}} // Controlled by parent
+              nodeConfidences={nodeConfidences}
+              edgeConfidences={edgeConfidences}
+              onRefreshConfidence={() => {
+                confidenceIndicatorService.calculateAllNodeConfidences(nodes);
+                confidenceIndicatorService.calculateAllEdgeConfidences(edges, nodes);
+                setNodeConfidences(confidenceIndicatorService.getAllNodeConfidences());
+                setEdgeConfidences(confidenceIndicatorService.getAllEdgeConfidences());
+              }}
+            />
+            
+            {/* Screenshot Mode Controls */}
+            <ScreenshotModeControls
+              visible={showScreenshotControls}
+              onToggleVisibility={() => {}} // Controlled by parent
+              onScreenshotTaken={(dataUrl) => {
+                setScreenshotTaken(dataUrl);
+                // Optional: Show success toast or notification
+                console.log('Screenshot captured successfully');
+              }}
+            />
+          </Box>
+        )}
+
+        {viewMode === 'tactic' && (
+          <Box sx={{ flex: 1, p: 2 }}>
+            <TabbedTacticView
+              nodes={nodes}
+              edges={edges}
+              onNodeSelect={handleNodeSelect}
+              selectedNodeId={selectedNode?.id}
+              iocAnalysisResult={iocAnalysisResult}
+            />
+          </Box>
+        )}
+
+        {viewMode === 'timeline' && (
+          <Box sx={{ flex: 1, p: 2 }}>
+            <TimelineView
+              nodes={nodes}
+              edges={edges}
+              onNodeSelect={handleNodeSelect}
+              selectedNodeId={selectedNode?.id}
+            />
+          </Box>
+        )}
+
+        {viewMode === 'ioc' && (
+          <Box sx={{ flex: 1, p: 2 }}>
+            <IOCView
+              iocAnalysisResult={iocAnalysisResult}
+            />
+          </Box>
+        )}
+
+        {viewMode === 'hybrid' && (
+          <Box sx={{ flex: 1, display: 'flex', gap: 2, p: 2 }}>
+            <Box sx={{ flex: 2 }}>
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={handleNodesChange}
+                onEdgesChange={handleEdgesChange}
+                nodeTypes={nodeTypes}
+                onNodeClick={handleNodeClick}
+                onPaneClick={handlePaneClick}
+                nodesDraggable={!isStreaming}
+                nodesConnectable={false}
+                elementsSelectable={true}
+                fitView={false}
+                style={reactFlowStyle}
+                onlyRenderVisibleElements={true}
+                minZoom={0.2}
+                maxZoom={2}
+              >
+                <Background
+                  color="rgba(255, 255, 255, 0.1)"
+                  variant={BackgroundVariant.Dots}
+                  gap={20}
+                  size={1}
+                />
+                <Controls position="bottom-right" />
+              </ReactFlow>
+            </Box>
+            <Box sx={{ flex: 1, maxWidth: 400 }}>
+              <TabbedTacticView
+                nodes={nodes}
+                edges={edges}
+                onNodeSelect={handleNodeSelect}
+                selectedNodeId={selectedNode?.id}
+                iocAnalysisResult={iocAnalysisResult}
+              />
+            </Box>
+          </Box>
+        )}
       </Box>
 
       {/* Node Details Panel */}      
@@ -841,6 +1140,79 @@ const StreamingFlowVisualizationContent: React.FC<StreamingFlowVisualizationProp
         <NodeDetailsPanel
           node={selectedNode}
           onClose={closeNodeDetails}
+        />
+      )}
+
+      {/* IOC/IOA Analysis Panel */}
+      {showIocPanel && iocAnalysisResult && (
+        <IOCDisplayPanel
+          analysisResult={iocAnalysisResult}
+          onClose={() => setShowIocPanel(false)}
+          onExport={(format) => {
+            if (iocAnalysisServiceRef.current && iocAnalysisResult) {
+              return iocAnalysisServiceRef.current.exportAnalysis(iocAnalysisResult, format);
+            }
+            return Promise.resolve('');
+          }}
+        />
+      )}
+      
+      {/* Advanced Filter Panel */}
+      {showAdvancedFilters && enableAdvancedVisualization && (
+        <AdvancedFilterPanel
+          onFilterChange={(filters) => {
+            console.log('Filters applied:', filters);
+            setAppliedFilters(filters);
+          }}
+          onPresetSelect={(preset) => {
+            console.log('Filter preset selected:', preset);
+            // Apply preset filters based on common threat scenarios
+            const presetFilters = {
+              'high-severity': {
+                severityLevels: ['high', 'critical'],
+                timeRange: null,
+                actors: [],
+                techniques: []
+              },
+              'apt-activity': {
+                severityLevels: ['high', 'critical'],
+                actors: ['APT1', 'APT28', 'APT29', 'Lazarus'],
+                techniques: ['T1566', 'T1059', 'T1055'],
+                timeRange: null
+              },
+              'recent-activity': {
+                timeRange: {
+                  start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+                  end: new Date()
+                },
+                severityLevels: [],
+                actors: [],
+                techniques: []
+              }
+            };
+            setAppliedFilters(presetFilters[preset] || null);
+          }}
+          filterStats={{
+            totalNodes: nodes.length,
+            filteredNodes: filteredNodes.length,
+            severityDistribution: {
+              low: nodes.filter(n => n.data?.severity === 'low').length,
+              medium: nodes.filter(n => n.data?.severity === 'medium').length,
+              high: nodes.filter(n => n.data?.severity === 'high').length,
+              critical: nodes.filter(n => n.data?.severity === 'critical').length,
+            },
+            topActors: Array.from(new Set(nodes.map(n => n.data?.actor).filter(Boolean))).slice(0, 5),
+            topTechniques: Array.from(new Set(nodes.map(n => n.data?.technique).filter(Boolean))).slice(0, 10)
+          }}
+        />
+      )}
+      
+      {/* Interactive MITRE ATT&CK Legend */}
+      {showInteractiveLegend && enableAdvancedVisualization && (
+        <InteractiveLegend
+          isVisible={showInteractiveLegend}
+          onToggle={() => setShowInteractiveLegend(!showInteractiveLegend)}
+          usedTechniques={Array.from(new Set(filteredNodes.map(node => node.data?.technique).filter(Boolean)))}
         />
       )}
 

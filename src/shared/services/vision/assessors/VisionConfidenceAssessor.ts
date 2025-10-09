@@ -1,5 +1,5 @@
-import { IVisionConfidenceAssessor } from '../interfaces';
 import { VISION_PROMPT_CONFIG, CONFIDENCE_THRESHOLDS } from '../config';
+import { IVisionConfidenceAssessor } from '../interfaces';
 
 export class VisionConfidenceAssessor implements IVisionConfidenceAssessor {
   assessConfidence(analysisText: string, imageCount: number): 'low' | 'medium' | 'high' {

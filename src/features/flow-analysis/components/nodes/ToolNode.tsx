@@ -1,10 +1,11 @@
+import { Box } from '@mui/material';
 import { memo } from 'react';
 import { NodeProps } from 'reactflow';
-import { Box } from '@mui/material';
-import { getBaseNodeStyle, getNodeColor } from './shared/nodeStyles';
+
+import { NodeContent } from './shared/NodeContent';
 import { NodeHandles } from './shared/NodeHandles';
 import { NodeHeader } from './shared/NodeHeader';
-import { NodeContent } from './shared/NodeContent';
+import { getBaseNodeStyle, getNodeColor } from './shared/nodeStyles';
 
 function ToolNode({ data, selected }: NodeProps) {
   const isNewNode = data.isNewNode;

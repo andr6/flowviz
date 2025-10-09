@@ -1,6 +1,6 @@
+import { IMAGE_FILTER_CONFIG } from '../config';
 import { IImageFilter } from '../interfaces';
 import { ImageInfo } from '../types';
-import { IMAGE_FILTER_CONFIG } from '../config';
 
 export class ImageFilter implements IImageFilter {
   filterRelevantImages(images: ImageInfo[]): ImageInfo[] {
@@ -41,11 +41,11 @@ export class ImageFilter implements IImageFilter {
     });
     
     // Prefer larger images (more likely to contain detailed info)
-    if (img.size?.width && img.size.width > 400) score += 1;
-    if (img.size?.height && img.size.height > 300) score += 1;
+    if (img.size?.width && img.size.width > 400) {score += 1;}
+    if (img.size?.height && img.size.height > 300) {score += 1;}
     
     // Prefer certain file types
-    if (img.mediaType === 'image/png') score += 1; // PNG often used for screenshots
+    if (img.mediaType === 'image/png') {score += 1;} // PNG often used for screenshots
     
     return score;
   }

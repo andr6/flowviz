@@ -1,11 +1,12 @@
 import { memo } from 'react';
 import { NodeProps } from 'reactflow';
-import { isOperator, isAttackAction } from './shared/nodeUtils';
-import OperatorNode from './OperatorNode';
+
 import ActionNode from './ActionNode';
-import ToolNode from './ToolNode';
-import MalwareNode from './MalwareNode';
 import GenericNode from './GenericNode';
+import MalwareNode from './MalwareNode';
+import OperatorNode from './OperatorNode';
+import { isOperator, isAttackAction } from './shared/nodeUtils';
+import ToolNode from './ToolNode';
 
 function NodeFactory(props: NodeProps) {
   const { data } = props;

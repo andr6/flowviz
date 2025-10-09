@@ -1,5 +1,5 @@
 import { AttackFlowNode, FlowEdge } from '../types/attack-flow';
-import { ExtractedAttackInfo } from './types';
+
 import {
   AssetNodeConverter,
   ActionNodeConverter,
@@ -10,6 +10,8 @@ import {
   UrlNodeConverter,
   OperatorNodeConverter
 } from './converters';
+import { ExtractedAttackInfo } from './types';
+
 import type { INodeConverter } from './converters';
 
 export class FlowConverterRefactored {

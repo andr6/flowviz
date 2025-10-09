@@ -1,8 +1,10 @@
-import React from 'react';
-import { Alert, AlertTitle, Box, Button, Typography } from '@mui/material';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
-import ErrorBoundary from './ErrorBoundary';
+import { Alert, AlertTitle, Box, Button, Typography } from '@mui/material';
+import React from 'react';
+
 import { ClaudeServiceError, NetworkError, APIError, ValidationError } from '../../../features/flow-analysis/services';
+
+import ErrorBoundary from './ErrorBoundary';
 
 interface ServiceErrorBoundaryProps {
   children: React.ReactNode;

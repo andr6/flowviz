@@ -1,249 +1,1161 @@
-# FlowViz - Attack Flow Visualizer
+# ThreatFlow - Enterprise Threat Intelligence Platform
 
-An open-source React application that analyzes cybersecurity articles and generates interactive attack flow visualizations using the MITRE ATT&CK framework.
+A cutting-edge, enterprise-grade cybersecurity threat intelligence platform that transforms security articles, incident reports, and threat data into interactive attack flow visualizations using the MITRE ATT&CK framework. Built for security analysts, threat hunters, SOC teams, and incident response professionals.
 
-## ✨ Features
+## 📋 Table of Contents
 
-- 🔍 **Article Analysis**: Extract attack patterns from cybersecurity articles and reports
-- 📊 **Interactive Visualization**: Generate dynamic attack flow diagrams with real-time streaming
-- 🎯 **MITRE ATT&CK Integration**: Map techniques and tactics to the ATT&CK framework
-- 🖼️ **Image Analysis**: Process screenshots and diagrams from articles
-- 📤 **Multiple Export Formats**: Export as PNG, STIX 2.1 bundles, or Attack Flow Builder (.afb) files
-- ⚡ **Real-time Streaming**: Watch attack flows build in real-time as Claude analyzes content
-- 🎬 **Story Mode**: Cinematic playback of attack progression with customizable controls
-- 💾 **Save & Load**: Persistent storage of analyses with metadata and search capabilities
-- ⚙️ **Configurable**: Server-side configuration via environment variables
-- 🛡️ **Defensive Focus**: Built for security analysts and threat hunters
-- 🔒 **Secure Architecture**: Server-side API processing with SSRF protection
+- [Overview](#overview)
+- [Core Functionality](#core-functionality)
+- [Architecture](#architecture)
+- [Quick Start](#quick-start)
+- [Starting & Stopping](#starting--stopping)
+- [Modules & Features](#modules--features)
+- [Integrations](#integrations)
+- [Development](#development)
+- [Troubleshooting](#troubleshooting)
+
+## 🎯 Overview
+
+ThreatFlow is a comprehensive threat intelligence platform that combines AI-powered analysis, real-time visualization, and enterprise-grade security operations capabilities. It processes threat intelligence from multiple sources, visualizes attack patterns, generates defensive recommendations, and integrates with existing security infrastructure.
+
+### Key Capabilities
+
+- **AI-Powered Analysis**: Multi-provider AI support (Claude, Ollama, OpenAI, OpenRouter) for intelligent threat analysis
+- **Real-time Visualization**: Interactive attack flow diagrams with MITRE ATT&CK framework mapping
+- **Defensive Intelligence**: Automated MITRE D3FEND mapping for countermeasure recommendations
+- **Enterprise Features**: Authentication, RBAC, audit logging, SIEM integration, and compliance reporting
+- **SOC Operations**: Alert triage, case management, investigation workflows, and playbook generation
+- **Threat Hunting**: IOC/IOA extraction, threat correlation, and advanced search capabilities
+- **Purple Teaming**: Attack simulation, defense validation, and purple team collaboration
+- **Executive Reporting**: Metrics dashboards, compliance reports, and risk scoring
+
+## ✨ Core Functionality
+
+### 1. **Threat Intelligence Analysis**
+Transform security articles, reports, and threat feeds into actionable intelligence:
+- **URL Analysis**: Extract attack patterns from cybersecurity articles and reports
+- **Text Analysis**: Process raw text, IOCs, and threat data directly
+- **Image Analysis**: Extract attack flows from screenshots and diagrams
+- **Multi-source Processing**: Aggregate intelligence from various threat feeds
+- **Real-time Streaming**: Watch attack flows build as AI processes content
+- **MITRE ATT&CK Mapping**: Automatic technique and tactic identification
+
+### 2. **Attack Flow Visualization**
+Interactive, professional visualizations for threat analysis:
+- **Dynamic Flow Diagrams**: Node-based attack progression visualization
+- **Multiple Node Types**: Operator, Tool, Malware, Action, Asset, Infrastructure, Vulnerability, URL nodes
+- **Story Mode**: Cinematic playback of attack progression with customizable controls
+- **Interactive Exploration**: Click nodes for detailed information, zoom, pan, and rearrange
+- **Custom Layouts**: Hierarchical, force-directed, and custom arrangements
+- **Export Capabilities**: PNG, STIX 2.1 bundles, Attack Flow Builder (.afb) files
+
+### 3. **Defensive Intelligence**
+Automated defensive recommendations and security architecture:
+- **D3FEND Mapping**: Automatic mapping of ATT&CK techniques to defensive countermeasures
+- **Defense Matrix**: Heatmap visualization of technique-to-countermeasure effectiveness
+- **Coverage Assessment**: Quantitative analysis of defensive posture and gaps
+- **Countermeasure Prioritization**: ROI-based prioritization with 6-factor scoring
+- **Architecture Documents**: Generate security architecture documentation
+- **Gap Analysis**: Identify critical, high, medium, and low priority gaps
+
+### 4. **SOC Operations**
+Streamline security operations center workflows:
+- **Alert Triage**: Intelligent alert categorization and prioritization
+- **Case Management**: Track investigations, evidence, and remediation
+- **Investigation Workflows**: Guided investigation processes with playbooks
+- **Playbook Generation**: Auto-generate response playbooks from attack flows
+- **Collaboration**: Team collaboration features for incident response
+- **Timeline Analysis**: Temporal analysis of attack progression
+
+### 5. **Threat Hunting**
+Advanced capabilities for proactive threat hunting:
+- **IOC/IOA Extraction**: Automatic extraction from articles and reports
+- **IOC Enrichment**: Enhance IOCs with threat intelligence feeds
+- **Correlation Engine**: Correlate threats across multiple sources
+- **Advanced Search**: Search by technique, actor, malware, or IOC
+- **Threat Correlation**: Link related threats and campaigns
+- **Pattern Detection**: Identify emerging attack patterns
+
+### 6. **Purple Teaming & Attack Simulation**
+Validate defenses and improve security posture:
+- **Attack Simulation**: Simulate MITRE ATT&CK techniques
+- **Defense Validation**: Test control effectiveness
+- **Purple Team Workflows**: Collaborative red/blue team exercises
+- **Gap Identification**: Identify defensive coverage gaps
+- **Simulation Reports**: Detailed reports on simulation results
+- **Remediation Tracking**: Track defensive improvements
+
+### 7. **Executive Reporting & Metrics**
+Comprehensive reporting for leadership and compliance:
+- **Metrics Dashboard**: MTTD, MTTR, threat trends, and KPIs
+- **Risk Scoring**: Quantitative risk assessment
+- **Compliance Reports**: SOC 2, ISO 27001, NIST CSF templates
+- **Operational Reports**: SOC performance and incident trends
+- **Strategic Reports**: Long-term threat landscape analysis
+- **Export Formats**: PDF, Excel, JSON
+
+### 8. **Machine Learning & AI**
+Advanced AI capabilities for threat intelligence:
+- **Pattern Recognition**: ML-based attack pattern detection
+- **Anomaly Detection**: Identify unusual attack behaviors
+- **Threat Prediction**: Predictive analytics for emerging threats
+- **Auto-classification**: Automatic threat categorization
+- **Model Training**: Custom ML models for organization-specific threats
+- **Confidence Scoring**: AI confidence indicators for analysis
+
+### 9. **UI Adaptability**
+Professional, customizable user interface:
+- **Adaptive Density Control**: User-controlled UI complexity (Compact, Comfortable, Spacious)
+- **Responsive Design**: Optimized for desktop, tablet, and mobile
+- **Dark/Light Themes**: Professional color schemes
+- **Accessibility**: WCAG 2.1 AA compliance
+- **Customizable Dashboards**: Personalized layouts and widgets
+- **Keyboard Shortcuts**: Efficient navigation and controls
+
+## 🏗️ Architecture
+
+### Technology Stack
+
+#### Frontend
+- **Framework**: React 18 with TypeScript (strict mode)
+- **UI Library**: Material-UI (MUI) v5 with custom ThreatFlow theme
+- **Visualization**: React Flow for attack flow diagrams
+- **State Management**: React Context API, React Query for server state
+- **Build Tool**: Vite with optimizations and tree-shaking
+- **Routing**: React Router v6 for navigation
+
+#### Backend
+- **Server**: Express.js with TypeScript
+- **Database**: PostgreSQL with JSONB support
+- **Authentication**: JWT-based with refresh tokens
+- **Security**: Helmet, CORS, rate limiting, SSRF protection
+- **API**: RESTful endpoints with server-sent events (SSE) for streaming
+- **Middleware**: Request validation, error handling, audit logging
+
+#### AI Integration
+- **Providers**: Claude (Anthropic), Ollama, OpenAI, OpenRouter
+- **Streaming**: Real-time analysis with server-sent events
+- **Vision**: Multi-modal support for image analysis
+- **Fallback**: Graceful degradation to alternative providers
+
+### Architectural Patterns
+
+**Feature-based Architecture**: Modular design with independent feature modules
+```
+src/features/
+├── app/                    # Core application
+├── auth/                   # Authentication & authorization
+├── flow-analysis/          # Attack flow analysis
+├── flow-export/            # Export functionality
+├── flow-storage/           # Save/load operations
+├── ioc-analysis/           # IOC/IOA extraction
+├── threat-intelligence/    # Threat intel feeds
+├── siem/                   # SIEM integrations
+├── d3fend-mapping/         # Defensive mapping
+├── executive-reporting/    # Metrics & reports
+├── attack-simulation/      # Purple teaming
+├── alert-triage/           # Alert management
+├── case-management/        # Case tracking
+└── playbook-generation/    # Playbook automation
+```
+
+**Shared Infrastructure**: Common components, services, and utilities
+```
+src/shared/
+├── components/     # Reusable UI components
+├── services/       # AI, auth, database, storage
+├── theme/          # Design system & theming
+├── context/        # Global state (density, theme)
+├── utils/          # Utilities & helpers
+└── constants/      # Application constants
+```
+
+**Security-first Design**:
+- Server-side API processing (no client-side API keys)
+- SSRF protection for external requests
+- Rate limiting on all endpoints
+- Input validation and sanitization
+- Audit logging for compliance
+- Role-based access control (RBAC)
+
+### Data Flow
+
+```
+User Input → Frontend → Express Server → AI Provider
+                ↓              ↓              ↓
+         Local State    PostgreSQL      Streaming Response
+                ↓              ↓              ↓
+         React UI    ← Database Query ← Real-time Update
+```
+
+### Database Schema
+
+**Core Tables**:
+- `users`, `organizations`, `roles` - Authentication & RBAC
+- `attack_flows`, `attack_techniques`, `iocs` - Threat intelligence
+- `defense_matrices`, `d3fend_countermeasures` - Defensive mapping
+- `alerts`, `cases`, `investigations` - SOC operations
+- `simulations`, `simulation_results` - Purple teaming
+- `reports`, `metrics`, `audit_logs` - Reporting & compliance
 
 ## 🚀 Quick Start
 
-## Prerequisites
+### Prerequisites
 
-- Node.js (v18 or higher)
-- npm or yarn
-- Anthropic API key ([get one here](https://console.anthropic.com))
+- **Node.js**: v18 or higher
+- **npm**: v9 or higher (or yarn/pnpm)
+- **PostgreSQL**: v14 or higher (for enterprise features)
+- **AI Provider** (choose one or more):
+  - **Claude**: Anthropic API key ([get one here](https://console.anthropic.com))
+  - **Ollama**: Local installation ([install guide](https://ollama.ai))
+  - **OpenAI**: OpenAI API key (optional)
+  - **OpenRouter**: OpenRouter API key (optional)
 
-## Setup
+### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/davidljohnson/flowviz.git
-   cd flowviz
-   ```
+**1. Clone the repository**
+```bash
+git clone https://github.com/davidljohnson/threatflow.git
+cd threatflow
+```
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+**2. Install dependencies**
+```bash
+npm install
+```
 
-3. **Configure environment** (Required for server-side API calls)
-   ```bash
-   cp .env.example .env
-   # Edit .env and add your Anthropic API key
-   ```
+**3. Setup PostgreSQL Database**
+```bash
+# Install PostgreSQL (Ubuntu/Debian)
+sudo apt-get install postgresql postgresql-contrib
 
-4. **Start the application**
-   ```bash
-   npm run dev:full
-   ```
-   
-   This starts both the frontend (http://localhost:5173) and backend proxy (http://localhost:3001)
+# Create database and user
+sudo -u postgres psql
+CREATE USER threatflow_user WITH PASSWORD 'your_secure_password';
+CREATE DATABASE threatflow_db OWNER threatflow_user;
+GRANT ALL PRIVILEGES ON DATABASE threatflow_db TO threatflow_user;
+\q
 
-## Getting Your API Key
+# Initialize schema
+psql -U threatflow_user -d threatflow_db -f src/server/database/schema.sql
+psql -U threatflow_user -d threatflow_db -f src/features/d3fend-mapping/db/schema-d3fend.sql
+psql -U threatflow_user -d threatflow_db -f src/features/executive-reporting/db/schema-executive-reporting.sql
+psql -U threatflow_user -d threatflow_db -f src/features/attack-simulation/db/schema-attack-simulation.sql
+```
 
-1. Visit [console.anthropic.com](https://console.anthropic.com)
-2. Sign in or create an account
-3. Go to **API Keys** and create a new key
-4. Copy the key (starts with "sk-ant-")
-5. Add it to your .env file as ANTHROPIC_API_KEY
+**4. Configure environment**
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
 
-> 💡 **Note**: Your API key is used server-side only for better security. It's never exposed to the client.
+**Required environment variables**:
+```env
+# Database
+DATABASE_URL=postgresql://threatflow_user:your_secure_password@localhost:5432/threatflow_db
 
-## Usage
+# AI Provider (choose at least one)
+ANTHROPIC_API_KEY=sk-ant-xxxxx                # Claude
+OLLAMA_BASE_URL=http://localhost:11434        # Ollama (if using)
+OPENAI_API_KEY=sk-xxxxx                       # OpenAI (if using)
+OPENROUTER_API_KEY=sk-or-xxxxx                # OpenRouter (if using)
 
-1. **Analyze Content**: 
-   - **URL Mode**: Paste a cybersecurity article URL and click "Analyze Article"
-   - **Text Mode**: Paste article text directly for analysis
-   
-2. **Watch Real-time Streaming**: Attack flow nodes and connections appear as Claude processes the content
+# JWT Secrets (generate strong random strings)
+JWT_SECRET=your_jwt_secret_here
+JWT_REFRESH_SECRET=your_refresh_secret_here
 
-3. **Interactive Exploration**:
-   - Click nodes to see detailed information with MITRE ATT&CK mappings
-   - Zoom, pan, and drag nodes around the canvas
-   - Use Story Mode to watch attack progression cinematically
+# Server
+PORT=3001
+NODE_ENV=development
+```
 
-4. **Save & Export**:
-   - Save analyses with custom titles and descriptions
-   - Export as PNG images, STIX 2.1 bundles, or AFB files for Attack Flow Builder
-   - Load previously saved analyses
+**5. Initialize database with demo data**
+```bash
+npm run init-demo
+```
 
-5. **Customize Experience**:
-   - Toggle cinematic mode for story playback
-   - Configure visualization preferences
-   - Adjust server settings via environment variables
+**Demo credentials**:
+- **Email**: admin@threatflow-demo.local
+- **Username**: admin
+- **Password**: ThreatFlow@2024
+- **Role**: admin
 
-## Error Handling
+**6. Start the application**
 
-The application includes comprehensive error handling with:
+**Option A: Using Management Script (Recommended)**
+```bash
+# Validates prerequisites and starts both services
+./threatflow.sh start
+```
 
-- **Network Errors**: Connection issues, timeouts, and CORS problems
-- **API Errors**: Rate limiting, authentication, and quota issues
-- **Validation Errors**: Invalid URLs, empty content, and format issues
-- **Recovery Options**: Retry buttons and helpful suggestions
+**Option B: Using npm**
+```bash
+npm run dev:full
+```
 
-### Common Error Solutions
+The application will be available at:
+- **Frontend**: http://localhost:5173
+- **Backend**: http://localhost:3001
 
-- **"Please set your Anthropic API key"**: Ensure ANTHROPIC_API_KEY is set in your .env file
-- **"Network Connection Failed"**: Check your internet connection
-- **"Authentication Error"**: Verify your API key is correct in .env file
-- **"Rate Limit Exceeded"**: Wait a moment and try again
-- **"API Quota Exceeded"**: Check your Anthropic account billing
-- **"Invalid URL"**: Ensure the URL starts with http:// or https://
+**Tip**: Use `./threatflow.sh status` to check if services are running, or `./threatflow.sh health` for detailed health checks.
 
-## Architecture
+## 🎮 Starting & Stopping
 
-### Frontend
-- **React 18** with TypeScript
-- **Material-UI** for components
-- **React Query** for data fetching
-- **React Flow** for visualization
-- **Vite** for build tooling
+### Management Script (Recommended)
 
-### Backend Proxy
-- **Express.js** server with secure architecture
-- **Server-side API calls** - All Anthropic API calls happen server-side
-- **Security features** - Rate limiting, SSRF protection, request validation
-- **CORS handling** with configurable origins
-- **Error handling** and comprehensive logging
+ThreatFlow includes a comprehensive management script with automatic prerequisite validation:
 
-### Services
-- **Article Parser**: Extracts content from URLs
-- **Claude Service**: AI-powered attack flow analysis
-- **Flow Visualization**: Generates interactive diagrams
+```bash
+# Start with validation (recommended)
+./threatflow.sh start
 
-## Development
+# Check status
+./threatflow.sh status
+
+# View health
+./threatflow.sh health
+
+# Stop services
+./threatflow.sh stop
+
+# View all commands
+./threatflow.sh --help
+```
+
+**Features**:
+- ✅ Automatic prerequisite validation (Node.js, PostgreSQL, .env, dependencies)
+- ✅ Health checks for frontend, backend, database, and AI providers
+- ✅ Process management with PID tracking
+- ✅ Log management and viewing
+- ✅ Production mode with PM2 support
+- ✅ Port availability checking
+- ✅ Color-coded output
+
+See [Management Script Documentation](./docs/MANAGEMENT_SCRIPT.md) for complete guide.
+
+### Start Commands (Manual)
+
+**Development (Recommended)**:
+```bash
+# Start both frontend and backend together
+npm run dev:full
+# Frontend: http://localhost:5173
+# Backend: http://localhost:3001
+```
+
+**Individual Services**:
+```bash
+# Frontend only (Vite dev server)
+npm run dev
+
+# Backend only (Express server)
+npm run server
+```
+
+**Production**:
+```bash
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Start production server
+NODE_ENV=production node server.ts
+```
+
+### Stop Commands
+
+**Development**:
+```bash
+# Stop dev:full or individual services
+Ctrl+C (in terminal)
+
+# Kill background processes
+pkill -f "vite"
+pkill -f "node server"
+```
+
+**Production**:
+```bash
+# If using PM2
+pm2 stop threatflow
+pm2 delete threatflow
+
+# If using systemd
+sudo systemctl stop threatflow
+
+# Manual process kill
+ps aux | grep node
+kill -9 <PID>
+```
+
+### Service Management
+
+**Using PM2 (Recommended for production)**:
+```bash
+# Install PM2
+npm install -g pm2
+
+# Start application
+pm2 start npm --name "threatflow-frontend" -- run dev
+pm2 start server.ts --name "threatflow-backend"
+
+# Manage services
+pm2 status                 # Check status
+pm2 logs                   # View logs
+pm2 restart threatflow-*   # Restart all
+pm2 stop threatflow-*      # Stop all
+pm2 delete threatflow-*    # Remove all
+
+# Auto-start on boot
+pm2 startup
+pm2 save
+```
+
+**Using Docker (Alternative)**:
+```bash
+# Build and start
+docker-compose up -d
+
+# Stop
+docker-compose down
+
+# View logs
+docker-compose logs -f
+
+# Rebuild
+docker-compose up -d --build
+```
+
+### Health Checks
+
+```bash
+# Check frontend
+curl http://localhost:5173
+
+# Check backend
+curl http://localhost:3001/api/health
+
+# Check database
+psql -U threatflow_user -d threatflow_db -c "SELECT 1;"
+
+# Check AI provider
+curl http://localhost:3001/api/providers/status
+```
+
+## 📦 Modules & Features
+
+### Core Modules
+
+#### 1. **Application Core** (`src/features/app/`)
+Main application shell and navigation
+- **Components**: AppBar, SearchForm, SettingsDialog, NavigationSidebar
+- **Hooks**: useAppState, useProviderSettings
+- **Services**: Application configuration, provider management
+
+#### 2. **Authentication & Authorization** (`src/features/auth/`)
+Enterprise authentication system
+- **Components**: LoginForm, RegisterForm, RoleManager
+- **Services**: JWT authentication, session management, RBAC
+- **Database**: users, organizations, roles, permissions
+- **Features**: Multi-factor authentication, SSO support, audit logging
+
+#### 3. **Flow Analysis** (`src/features/flow-analysis/`)
+Attack flow analysis and visualization
+- **Components**: StreamingFlowVisualization, NodeFactory, StoryModeControls
+- **Services**: AI integration, flow conversion, graph layout
+- **Node Types**: Operator, Tool, Malware, Action, Asset, Infrastructure, Vulnerability, URL
+- **Hooks**: useStreamingGraph, useStoryMode, useGraphLayout
+- **Converters**: 8 specialized node converters for different entity types
+
+#### 4. **Flow Export** (`src/features/flow-export/`)
+Export attack flows to various formats
+- **Services**:
+  - STIX 2.1 Bundle Exporter
+  - Attack Flow Builder (.afb) Exporter
+  - PNG Image Exporter
+  - Interactive HTML Exporter
+  - Vector Export (SVG)
+- **Templates**: Export templates for customization
+
+#### 5. **Flow Storage** (`src/features/flow-storage/`)
+Save, load, and manage attack flows
+- **Components**: SaveFlowDialog, LoadFlowDialog, FlowVersioning, FlowComparison
+- **Services**: LocalStorageService, FlowManagementService
+- **Features**: Versioning, tags, search, metadata, templates
+
+#### 6. **IOC/IOA Analysis** (`src/features/ioc-analysis/`)
+Indicator of Compromise extraction and analysis
+- **Components**: IOCExtractor, IOCEnrichment, IOCVisualization
+- **Services**: IOC extraction, enrichment, validation
+- **Types**: IP addresses, domains, URLs, hashes, file paths, registry keys
+
+#### 7. **Threat Intelligence** (`src/features/threat-intelligence/`)
+Threat feed integration and management
+- **Components**: ThreatFeedManager, ThreatCorrelation
+- **Services**: Feed aggregation, STIX processing, threat correlation
+- **Integrations**: MISP, TAXII, custom feeds
+- **Database**: threat_feeds, threat_indicators, threat_actors
+
+#### 8. **SIEM Integration** (`src/features/siem/`)
+Security Information and Event Management connectivity
+- **Integrations**:
+  - Splunk (REST API, HEC)
+  - Elastic Security (Elasticsearch API)
+  - QRadar (REST API)
+  - ArcSight (REST API)
+  - Chronicle (API)
+- **Services**: Event forwarding, alert ingestion, query execution
+- **Features**: Bi-directional sync, custom mappings, field normalization
+
+#### 9. **D3FEND Mapping** (`src/features/d3fend-mapping/`)
+Automated defensive countermeasure recommendations
+- **Services**: D3FENDMappingService with 5 core methods
+- **Components**: D3FENDMatrixViewer, DefensiveCoverageHeatmap, CountermeasurePrioritizer
+- **Database**: 11 tables for countermeasures, mappings, coverage
+- **API**: 25+ REST endpoints for mapping and analysis
+- **Features**:
+  - 20+ pre-configured countermeasures
+  - 6-factor ROI prioritization
+  - Coverage assessment
+  - Architecture document generation
+
+#### 10. **Executive Reporting** (`src/features/executive-reporting/`)
+Metrics, dashboards, and compliance reporting
+- **Services**: ExecutiveReportingService, ReportTemplateService
+- **Reports**: Compliance (SOC 2, ISO 27001, NIST), Risk, Operational, Strategic
+- **Metrics**: MTTD, MTTR, threat trends, coverage, incident statistics
+- **Database**: reports, metrics, report_templates, scheduled_reports
+- **Components**: MetricsDashboard, ReportGenerator, ComplianceReports
+- **Export**: PDF, Excel, JSON formats
+
+#### 11. **Attack Simulation** (`src/features/attack-simulation/`)
+Purple teaming and defense validation
+- **Services**: AttackSimulationService, PurpleTeamWorkflowService
+- **Components**: SimulationRunner, ResultsViewer, GapAnalysis
+- **Database**: simulations, simulation_techniques, simulation_results
+- **Features**:
+  - MITRE ATT&CK technique simulation
+  - Defense validation
+  - Gap identification
+  - Remediation tracking
+  - Purple team collaboration
+
+#### 12. **Alert Triage** (`src/features/alert-triage/`)
+Intelligent alert management and prioritization
+- **Components**: AlertQueue, AlertDetails, TriageWorkflow
+- **Services**: Alert categorization, ML-based prioritization
+- **Database**: alerts, triage_decisions, alert_rules
+- **Features**: Auto-triage, escalation rules, SLA tracking
+
+#### 13. **Case Management** (`src/features/case-management/`)
+Incident and investigation tracking
+- **Components**: CaseBoard, CaseDetails, TimelineView, EvidenceManager
+- **Services**: Case lifecycle management, evidence chain of custody
+- **Database**: cases, case_evidence, case_timeline, case_collaborators
+- **Features**: Templates, workflows, collaboration, reporting
+
+#### 14. **Investigation** (`src/features/investigation/`)
+Guided investigation workflows
+- **Components**: InvestigationWorkbench, EvidenceCollector, AnalysisTools
+- **Services**: Investigation orchestration, evidence analysis
+- **Features**: Guided playbooks, evidence graphs, hypothesis tracking
+
+#### 15. **Playbook Generation** (`src/features/playbook-generation/`)
+Automated response playbook creation
+- **Services**: PlaybookGenerator, PlaybookTemplates
+- **Components**: PlaybookEditor, PlaybookLibrary, PlaybookExecutor
+- **Database**: playbooks, playbook_steps, playbook_executions
+- **Templates**: MITRE ATT&CK-based response playbooks
+
+#### 16. **Machine Learning** (`src/features/ml-ai/`)
+Advanced AI capabilities for threat intelligence
+- **Services**: PatternRecognition, AnomalyDetection, ThreatPrediction
+- **Models**: Clustering, classification, regression
+- **Features**: Auto-training, model versioning, confidence scoring
+
+#### 17. **SOC Dashboard** (`src/features/soc-dashboard/`)
+Real-time SOC operations dashboard
+- **Components**: LiveMetrics, AlertFeed, ThreatMap, TeamActivity
+- **Services**: Real-time data aggregation, WebSocket updates
+- **Widgets**: Customizable dashboard widgets
+
+#### 18. **Threat Hunting** (`src/features/threat-hunting/`)
+Proactive threat hunting capabilities
+- **Components**: HuntingConsole, QueryBuilder, ResultsAnalysis
+- **Services**: Advanced search, pattern detection, correlation
+- **Features**: Saved hunts, hunt templates, collaboration
+
+#### 19. **Threat Correlation** (`src/features/threat-correlation/`)
+Multi-source threat correlation engine
+- **Services**: CorrelationEngine, SimilarityAnalysis
+- **Components**: CorrelationGraph, RelatedThreats
+- **Features**: Campaign tracking, actor attribution, pattern linking
+
+#### 20. **Data Management** (`src/features/data-management/`)
+Data retention and lifecycle management
+- **Services**: DataRetention, Archival, Cleanup
+- **Features**: Retention policies, data export, compliance
+
+### Shared Components
+
+#### UI Component System (`src/shared/components/`)
+Professional, reusable components:
+- **Alert**: Status messages and notifications
+- **Button**: Primary, secondary, text variants
+- **Dropdown**: Select menus and multi-select
+- **EnhancedDialog**: Modal dialogs with actions
+- **EnhancedForm**: Form builder with validation
+- **ErrorBoundary**: Error handling and recovery
+- **LoadingIndicator**: Loading states and skeletons
+- **SearchInput**: Advanced search with filters
+- **Typography**: Consistent text styling
+- **DensitySettings**: UI density controls
+- **ThemeToggle**: Dark/light mode switcher
+- **CommandPalette**: Keyboard-driven navigation
+- **NavigationSidebar**: Feature navigation
+- **Breadcrumb**: Navigation breadcrumbs
+- **AccessibleModal**: WCAG-compliant modals
+
+#### Services (`src/shared/services/`)
+Core infrastructure services:
+- **AI Providers**: Claude, Ollama, OpenAI, OpenRouter adapters
+- **Authentication**: JWT service, session management
+- **Database**: PostgreSQL connection pool, query builder
+- **Storage**: LocalStorage, IndexedDB wrappers
+- **Streaming**: SSE client for real-time updates
+- **Image**: Download, extract, filter, optimize images
+- **Vision**: AI vision analysis for diagrams
+- **Config**: Application configuration management
+
+#### Theme System (`src/shared/theme/`)
+Professional design system:
+- **threatflow-theme.ts**: Main theme configuration
+- **density.ts**: Adaptive density system (Compact, Comfortable, Spacious)
+- **theme-variants.ts**: Dark/light theme variants
+- **Constants**: Colors, typography, spacing, shadows
+
+#### Context Providers (`src/shared/context/`)
+Global state management:
+- **DensityContext**: UI density preferences
+- **ThemeContext**: Dark/light theme
+- **AuthContext**: Authentication state
+- **ConfigContext**: Application configuration
+
+## 🔌 Integrations
+
+### SIEM Platforms
+
+#### Splunk
+- **Connection**: REST API + HTTP Event Collector (HEC)
+- **Features**: Event forwarding, search queries, alert ingestion
+- **Configuration**: `SPLUNK_HOST`, `SPLUNK_TOKEN`, `SPLUNK_HEC_TOKEN`
+- **Endpoints**: `/api/siem/splunk/*`
+
+#### Elastic Security
+- **Connection**: Elasticsearch REST API
+- **Features**: Index management, alert queries, detection rules
+- **Configuration**: `ELASTIC_HOST`, `ELASTIC_API_KEY`
+- **Endpoints**: `/api/siem/elastic/*`
+
+#### QRadar
+- **Connection**: REST API v15+
+- **Features**: Offense management, event forwarding, reference sets
+- **Configuration**: `QRADAR_HOST`, `QRADAR_SEC_TOKEN`
+- **Endpoints**: `/api/siem/qradar/*`
+
+#### ArcSight
+- **Connection**: REST API
+- **Features**: Event submission, active list management
+- **Configuration**: `ARCSIGHT_HOST`, `ARCSIGHT_TOKEN`
+- **Endpoints**: `/api/siem/arcsight/*`
+
+#### Chronicle
+- **Connection**: Chronicle API
+- **Features**: Event ingestion, UDM search, detection rules
+- **Configuration**: `CHRONICLE_CUSTOMER_ID`, `CHRONICLE_API_KEY`
+- **Endpoints**: `/api/siem/chronicle/*`
+
+### Threat Intelligence Platforms
+
+#### MISP (Malware Information Sharing Platform)
+- **Connection**: REST API
+- **Features**: Event import/export, attribute sync, galaxy mapping
+- **Configuration**: `MISP_URL`, `MISP_API_KEY`
+- **Endpoints**: `/api/threat-intel/misp/*`
+
+#### TAXII Servers
+- **Connection**: TAXII 2.1 protocol
+- **Features**: Collection subscription, STIX object sync
+- **Configuration**: `TAXII_SERVER_URL`, `TAXII_API_KEY`
+- **Endpoints**: `/api/threat-intel/taxii/*`
+
+#### Picus Security
+- **Connection**: REST API
+- **Features**: Attack simulation integration, threat scenario import
+- **Configuration**: `PICUS_BASE_URL`, `PICUS_REFRESH_TOKEN`
+- **Setup**: Use `python scripts/picus-token-helper.py --setup`
+- **Endpoints**: `/api/integrations/picus/*`
+
+### AI/ML Providers
+
+#### Claude (Anthropic)
+- **Models**: claude-sonnet-4, claude-opus-4
+- **Features**: Attack flow analysis, vision analysis, streaming
+- **Configuration**: `ANTHROPIC_API_KEY`, `CLAUDE_MODEL`
+- **Server-side**: All API calls via Express proxy
+
+#### Ollama (Local)
+- **Models**: llama3.2-vision, mistral, codellama
+- **Features**: Local processing, privacy-focused, offline capable
+- **Configuration**: `OLLAMA_BASE_URL`, `OLLAMA_MODEL`
+- **Setup**: `ollama serve` + `ollama pull llama3.2-vision:latest`
+
+#### OpenAI
+- **Models**: gpt-4-turbo, gpt-4-vision
+- **Features**: Alternative AI provider, vision analysis
+- **Configuration**: `OPENAI_API_KEY`, `OPENAI_MODEL`
+
+#### OpenRouter
+- **Features**: Multi-model router, cost optimization
+- **Configuration**: `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`
+
+### MITRE Frameworks
+
+#### ATT&CK Enterprise
+- **Version**: Latest (auto-updated)
+- **Features**: Technique mapping, tactic classification, sub-technique support
+- **Data**: Embedded ATT&CK data + API integration
+
+#### D3FEND
+- **Source**: https://d3fend.mitre.org/api/
+- **Features**: Defensive countermeasure mapping, effectiveness scoring
+- **Database**: 20+ pre-configured countermeasures + custom additions
+
+### Export Integrations
+
+#### STIX 2.1
+- **Format**: JSON bundles with full STIX compliance
+- **Objects**: Attack patterns, indicators, relationships, identity
+- **Use case**: Share with TAXII servers, MISP, other STIX platforms
+
+#### Attack Flow Builder
+- **Format**: .afb files (MITRE Attack Flow Builder)
+- **Features**: Import into MITRE's visualization tool
+- **Use case**: Collaborative analysis, standardized documentation
+
+#### Chronicle SecOps
+- **Format**: UDM events
+- **Features**: Direct ingestion into Chronicle
+- **Use case**: SIEM integration, detection engineering
+
+## 🛠️ Development
 
 ### Available Scripts
-- `npm run dev:full` - **Recommended**: Start both frontend and backend together
-- `npm run dev` - Start frontend only (http://localhost:5173)
-- `npm run server` - Start backend proxy only (http://localhost:3001)  
-- `npm run build` - Build for production with TypeScript validation and optimizations
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint with TypeScript support
+
+**Development**:
+```bash
+npm run dev:full        # Start both frontend and backend (recommended)
+npm run dev             # Frontend only (Vite dev server - port 5173)
+npm run server          # Backend only (Express server - port 3001)
+```
+
+**Building**:
+```bash
+npm run build           # Production build with TypeScript validation
+npm run preview         # Preview production build locally
+npm run type-check      # TypeScript type checking only
+```
+
+**Code Quality**:
+```bash
+npm run lint            # ESLint with TypeScript support (max 0 warnings)
+npm run lint:fix        # Auto-fix ESLint issues
+npm run format          # Prettier code formatting
+```
+
+**Database**:
+```bash
+npm run init-demo       # Initialize database with demo user
+npm run db:migrate      # Run database migrations
+npm run db:seed         # Seed database with sample data
+```
+
+**Testing**:
+```bash
+npm run test            # Run test suite
+npm run test:coverage   # Test coverage report
+npm run test:e2e        # End-to-end tests
+```
 
 ### Production Build Features
-- **Console Statement Removal**: All `console.log`, `console.debug`, and `console.info` statements are automatically removed in production builds
-- **Bundle Optimization**: Code splitting and vendor chunk optimization for faster loading
-- **TypeScript Validation**: Full type checking during build process
 
-### Project Structure
+- **Console Removal**: All `console.log`, `console.debug`, `console.info` removed automatically
+- **Tree Shaking**: Dead code elimination for smaller bundles
+- **Code Splitting**: Automatic chunking for optimal loading
+- **Minification**: JavaScript and CSS minification
+- **Source Maps**: Production source maps for debugging
+- **Bundle Analysis**: `npm run build -- --analyze` for bundle size analysis
+
+### Environment Configuration
+
+**Development** (`.env.development`):
+```env
+NODE_ENV=development
+VITE_API_URL=http://localhost:3001
+VITE_ENABLE_DEBUG=true
 ```
-flowviz/
-├── src/
-│   ├── features/           # Feature-based architecture
-│   │   ├── app/               # Core application components
-│   │   │   ├── components/       # AppBar, SearchForm, SettingsDialog
-│   │   │   └── hooks/           # useAppState and other app hooks
-│   │   ├── flow-analysis/      # Attack flow analysis and visualization
-│   │   │   ├── components/      # StreamingFlowVisualization and nodes
-│   │   │   ├── services/        # Claude AI integration and flow conversion
-│   │   │   └── types/          # Attack flow type definitions
-│   │   ├── flow-export/        # Export functionality
-│   │   │   └── services/        # STIX and Attack Flow exporters
-│   │   └── flow-storage/       # Save/Load functionality
-│   │       ├── components/      # LoadFlowDialog, SaveFlowDialog
-│   │       ├── services/        # LocalStorageService
-│   │       └── types/          # SavedFlow types
-│   ├── shared/             # Shared components and utilities
-│   │   ├── components/         # Reusable UI components
-│   │   ├── services/          # Image processing, vision services
-│   │   ├── theme/             # Material-UI theme configuration
-│   │   └── utils/             # Shared utilities
-│   ├── App.tsx             # Main application component
-│   └── main.tsx            # Application entry point
-├── server.js               # Express proxy server with security features
-├── security-utils.js       # Shared security utilities (SSRF protection, rate limiting)
-├── .env.example            # Environment configuration template
-├── vite.config.ts          # Vite configuration with TypeScript
-└── package.json            # Dependencies and scripts
+
+**Production** (`.env.production`):
+```env
+NODE_ENV=production
+VITE_API_URL=https://your-domain.com
+VITE_ENABLE_DEBUG=false
 ```
+
+**Environment Variables**:
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DATABASE_URL` | Yes | - | PostgreSQL connection string |
+| `ANTHROPIC_API_KEY` | Yes* | - | Claude API key |
+| `OLLAMA_BASE_URL` | Yes* | - | Ollama server URL |
+| `JWT_SECRET` | Yes | - | JWT signing secret |
+| `JWT_REFRESH_SECRET` | Yes | - | Refresh token secret |
+| `PORT` | No | 3001 | Server port |
+| `NODE_ENV` | No | development | Environment |
+| `RATE_LIMIT_ARTICLES` | No | 10 | Article fetches per 15 min |
+| `RATE_LIMIT_STREAMING` | No | 5 | AI requests per 5 min |
+| `MAX_REQUEST_SIZE` | No | 10mb | Max request body size |
+| `ALLOWED_ORIGINS` | No | localhost:5173 | CORS origins (comma-separated) |
+
+*At least one AI provider (Claude or Ollama) is required.
+
+See `.env.example` for complete configuration template.
 
 ### Adding New Features
-1. Create feature directories in `src/features/` following existing patterns
-2. Add shared components in `src/shared/components/` with proper TypeScript types
-3. Add feature-specific services in the appropriate feature's `services/` directory
-4. Define TypeScript types in feature-specific `types/` directories or `src/shared/`
-5. Follow the existing glassmorphism design system and Material-UI theming
-6. Update error handling and user feedback using shared error boundaries
-7. Test with various article types and formats
 
-### Environment Variables
-
-**Required:**
-```env
-ANTHROPIC_API_KEY=your_api_key_here  # Required for server-side Claude API calls
+**1. Create feature directory**:
+```bash
+mkdir -p src/features/my-feature/{components,services,types,db,api}
 ```
 
-**Optional (with defaults):**
-```env
-# Server Configuration
-PORT=3001                    # Server port (default: 3001)
-NODE_ENV=development         # Environment: development | production
-
-# Security - Rate Limiting
-RATE_LIMIT_ARTICLES=10       # Max article fetches per 15 min (default: 10)
-RATE_LIMIT_IMAGES=50         # Max image fetches per 10 min (default: 50)
-RATE_LIMIT_STREAMING=5       # Max AI requests per 5 min (default: 5)
-
-# Security - Size Limits  
-MAX_REQUEST_SIZE=10mb        # Max request body size (default: 10mb)
-MAX_ARTICLE_SIZE=5242880     # Max article size in bytes (default: 5MB)
-MAX_IMAGE_SIZE=3145728       # Max image size in bytes (default: 3MB)
-
-# CORS Configuration
-ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000  # Comma-separated
+**2. Follow structure**:
+```
+src/features/my-feature/
+├── components/         # React components
+│   ├── MyComponent.tsx
+│   └── index.tsx
+├── services/          # Business logic
+│   ├── MyService.ts
+│   └── index.ts
+├── types/             # TypeScript types
+│   └── index.ts
+├── db/                # Database schema
+│   └── schema-my-feature.sql
+├── api/               # API routes
+│   └── myFeatureRoutes.ts
+└── README.md          # Feature documentation
 ```
 
-See `.env.example` for a complete template with documentation.
+**3. Register API routes** (`server.ts`):
+```typescript
+import myFeatureRoutes from './src/features/my-feature/api/myFeatureRoutes';
+app.use('/api/my-feature', myFeatureRoutes);
+```
 
-## Troubleshooting
+**4. Add database schema**:
+```bash
+psql -U threatflow_user -d threatflow_db -f src/features/my-feature/db/schema-my-feature.sql
+```
 
-### CORS Issues
-If you encounter CORS errors:
-1. Ensure the proxy server is running (`npm run server`)
-2. Check that requests are going through `/api` proxy
-3. Verify the target URL is accessible
+**5. Follow conventions**:
+- Use TypeScript strict mode
+- Export types from `types/index.ts`
+- Use shared components from `src/shared/components/`
+- Follow ThreatFlow theme system
+- Add error boundaries
+- Include loading states
+- Write comprehensive JSDoc comments
 
-### API Key Issues
-If the API key isn't working:
-1. Check your .env file has ANTHROPIC_API_KEY set correctly
-2. Verify the key starts with "sk-ant-" and has no extra spaces
-3. Restart the server after updating .env: `npm run dev:full`
-4. Verify the key is valid in the Anthropic Console
-5. Ensure your Anthropic account has available credits
+### Code Style
 
-### Build Issues
-If the build fails:
-1. Clear node_modules: `rm -rf node_modules && npm install`
-2. Check TypeScript errors: `npm run lint`
-3. Verify all dependencies are installed
+**TypeScript**:
+- Strict mode enabled
+- No implicit any
+- Explicit return types for functions
+- Interface over type (except for unions)
 
-## Contributing
+**React**:
+- Functional components with hooks
+- Props interfaces with JSDoc
+- Memoization for expensive calculations
+- Error boundaries for error handling
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+**CSS**:
+- Material-UI `sx` prop for styling
+- Theme-based values (no hardcoded colors/spacing)
+- Responsive design with breakpoints
+- Accessibility (ARIA labels, semantic HTML)
 
-## License
+## 🔍 Troubleshooting
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+### Common Issues
 
-## Support
+#### CORS Errors
+**Symptoms**: "CORS policy" errors in browser console
+**Solution**:
+```bash
+# 1. Ensure proxy server is running
+npm run server
 
-For issues and questions:
-1. Check the troubleshooting section
-2. Review error messages for specific guidance
-3. Open an issue on GitHub with detailed information
+# 2. Check ALLOWED_ORIGINS in .env
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+
+# 3. Restart server after .env changes
+```
+
+#### API Key Issues
+**Symptoms**: Authentication errors, "Invalid API key"
+**Solution**:
+```bash
+# 1. Verify API key format
+ANTHROPIC_API_KEY=sk-ant-xxxxx  # Should start with sk-ant-
+
+# 2. Check for extra spaces/newlines
+cat .env | grep ANTHROPIC_API_KEY  # Should be single line
+
+# 3. Verify key in Anthropic Console
+# Visit console.anthropic.com to check key validity
+
+# 4. Restart server
+npm run dev:full
+```
+
+#### Database Connection Errors
+**Symptoms**: "Connection refused", "Database does not exist"
+**Solution**:
+```bash
+# 1. Check PostgreSQL is running
+sudo systemctl status postgresql
+
+# 2. Verify connection string
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+
+# 3. Test connection
+psql -U threatflow_user -d threatflow_db -c "SELECT 1;"
+
+# 4. Initialize schema if needed
+npm run init-demo
+```
+
+#### Ollama Issues
+**Symptoms**: "Ollama not available", connection errors
+**Solution**:
+```bash
+# 1. Start Ollama service
+ollama serve
+
+# 2. Pull required model
+ollama pull llama3.2-vision:latest
+
+# 3. Verify Ollama is accessible
+curl http://localhost:11434/api/tags
+
+# 4. Check OLLAMA_BASE_URL in .env
+OLLAMA_BASE_URL=http://localhost:11434
+```
+
+#### Build Failures
+**Symptoms**: TypeScript errors, build process fails
+**Solution**:
+```bash
+# 1. Clear node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
+
+# 2. Check TypeScript errors
+npm run type-check
+
+# 3. Clear build cache
+rm -rf dist .vite
+
+# 4. Rebuild
+npm run build
+```
+
+#### Rate Limiting
+**Symptoms**: "Too many requests" errors
+**Solution**:
+```bash
+# Adjust rate limits in .env
+RATE_LIMIT_ARTICLES=20         # Increase from default 10
+RATE_LIMIT_STREAMING=10        # Increase from default 5
+RATE_LIMIT_IMAGES=100          # Increase from default 50
+```
+
+#### Memory Issues
+**Symptoms**: Node heap out of memory
+**Solution**:
+```bash
+# Increase Node.js memory limit
+NODE_OPTIONS="--max-old-space-size=4096" npm run dev:full
+```
+
+### Debug Mode
+
+**Enable verbose logging**:
+```env
+# .env
+DEBUG=true
+LOG_LEVEL=debug
+```
+
+**View server logs**:
+```bash
+# Development
+npm run server  # Logs to console
+
+# Production with PM2
+pm2 logs threatflow-backend
+
+# Production logs
+tail -f logs/application.log
+tail -f logs/error.log
+```
+
+### Health Checks
+
+**System health**:
+```bash
+# Frontend
+curl http://localhost:5173
+
+# Backend
+curl http://localhost:3001/api/health
+
+# Database
+curl http://localhost:3001/api/health/database
+
+# AI Providers
+curl http://localhost:3001/api/providers/status
+```
+
+### Error Codes
+
+| Code | Meaning | Solution |
+|------|---------|----------|
+| 401 | Unauthorized | Check JWT token or re-login |
+| 403 | Forbidden | Insufficient permissions |
+| 429 | Rate Limited | Wait and retry, or increase limits |
+| 500 | Server Error | Check server logs |
+| 503 | Service Unavailable | Check AI provider status |
+
+## 📚 Documentation
+
+**Feature Documentation**:
+- [UI Density System](./UI_DENSITY_DOCUMENTATION.md) - Adaptive information density
+- [D3FEND Mapping](./D3FEND_MAPPING_DOCUMENTATION.md) - Defensive countermeasures
+- [Executive Reporting](./docs/executive-reporting.md) - Metrics and reports
+- [Attack Simulation](./docs/attack-simulation.md) - Purple teaming
+- [CLAUDE.md](./CLAUDE.md) - Developer guide for Claude Code
+
+**API Documentation**:
+- REST API reference: http://localhost:3001/api/docs (when running)
+- OpenAPI spec: `/docs/api/openapi.yaml`
+
+**Architecture Diagrams**:
+- System architecture: `/docs/architecture/system-overview.md`
+- Database schema: `/docs/architecture/database-schema.md`
+- Security model: `/docs/architecture/security.md`
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these guidelines:
+
+**1. Fork and clone**:
+```bash
+git clone https://github.com/your-username/threatflow.git
+cd threatflow
+git checkout -b feature/my-feature
+```
+
+**2. Make changes**:
+- Follow code style guidelines
+- Add tests for new features
+- Update documentation
+- Ensure all tests pass
+
+**3. Commit with conventional commits**:
+```bash
+git commit -m "feat: add new feature"
+git commit -m "fix: resolve bug"
+git commit -m "docs: update README"
+```
+
+**4. Submit pull request**:
+- Clear description of changes
+- Reference related issues
+- Include screenshots if UI changes
+
+**Types of contributions**:
+- 🐛 Bug fixes
+- ✨ New features
+- 📝 Documentation improvements
+- 🎨 UI/UX enhancements
+- ⚡ Performance improvements
+- 🔒 Security enhancements
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+**Community Support**:
+- GitHub Issues: [github.com/davidljohnson/threatflow/issues](https://github.com/davidljohnson/threatflow/issues)
+- Discussions: [github.com/davidljohnson/threatflow/discussions](https://github.com/davidljohnson/threatflow/discussions)
+
+**Professional Support**:
+- Email: support@threatflow.io
+- Documentation: [docs.threatflow.io](https://docs.threatflow.io)
+
+**Security Issues**:
+- Security vulnerabilities should be reported privately to security@threatflow.io
+- Do not open public issues for security vulnerabilities
+
+## 🙏 Acknowledgments
+
+- **MITRE Corporation** - ATT&CK and D3FEND frameworks
+- **Anthropic** - Claude AI platform
+- **Ollama** - Local AI inference
+- **React Flow** - Visualization library
+- **Material-UI** - Component library
+- **PostgreSQL** - Database system
+
+## 🗺️ Roadmap
+
+**Version 2.0** (Q2 2024):
+- [ ] Mobile app (iOS/Android)
+- [ ] Real-time collaboration features
+- [ ] Advanced ML models for threat prediction
+- [ ] Plugin ecosystem for custom integrations
+
+**Version 2.1** (Q3 2024):
+- [ ] Automated threat hunting workflows
+- [ ] Enhanced purple team capabilities
+- [ ] Custom reporting engine
+- [ ] API marketplace
+
+**Long-term**:
+- Kubernetes deployment templates
+- Multi-tenant SaaS platform
+- Federated threat intelligence sharing
+- Advanced graph analytics
+
+---
+
+**Built with ❤️ for the cybersecurity community**
+
+For detailed setup instructions, API documentation, and advanced features, visit our [documentation](https://docs.threatflow.io).

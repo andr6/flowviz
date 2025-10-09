@@ -1,8 +1,9 @@
+import { Typography, Box } from '@mui/material';
 import { memo } from 'react';
 import { NodeProps } from 'reactflow';
-import { Typography, Box } from '@mui/material';
-import { getOperatorNodeStyle } from './shared/nodeStyles';
+
 import { NodeHandles } from './shared/NodeHandles';
+import { getOperatorNodeStyle } from './shared/nodeStyles';
 import { hasName } from './shared/nodeUtils';
 
 function OperatorNode({ data, selected }: NodeProps) {

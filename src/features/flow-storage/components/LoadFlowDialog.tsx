@@ -1,10 +1,15 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import {
+  Upload as UploadIcon,
+  GetApp as ExportIcon,
+} from '@mui/icons-material';
 import {
   Box,
   Typography,
   List,
   Tooltip,
 } from '@mui/material';
+import React, { useState, useEffect, useMemo } from 'react';
+
 import { FlowAlert } from '../../../shared/components/Alert';
 import { 
   EnhancedDialog,
@@ -13,13 +18,10 @@ import {
   PrimaryButton,
   SecondaryButton 
 } from '../../../shared/components/EnhancedDialog';
-import { createScrollbarStyle } from '../../../shared/theme/flowviz-theme';
-import {
-  Upload as UploadIcon,
-  GetApp as ExportIcon,
-} from '@mui/icons-material';
+import { createScrollbarStyle } from '../../../shared/theme/threatflow-theme';
+import { LocalStorageService } from '../services';
 import { SavedFlow, StorageStats } from '../types/SavedFlow';
-import { LocalStorageService, StorageError } from '../services';
+
 import {
   FlowListItem,
   SearchAndFilters,
@@ -105,7 +107,7 @@ const LoadFlowDialog: React.FC<LoadFlowDialogProps> = ({
 
   // Filter and sort flows
   const filteredFlows = useMemo(() => {
-    let filtered = flows.filter(flow => {
+    const filtered = flows.filter(flow => {
       const matchesSearch = !searchTerm || 
         flow.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         flow.metadata.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -229,7 +231,7 @@ const LoadFlowDialog: React.FC<LoadFlowDialogProps> = ({
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files || files.length === 0) return;
+    if (!files || files.length === 0) {return;}
 
     setImporting(true);
     let importedCount = 0;
@@ -302,7 +304,7 @@ const LoadFlowDialog: React.FC<LoadFlowDialogProps> = ({
   };
 
   const handleSaveEdit = async () => {
-    if (!editingFlow || !editTitle.trim()) return;
+    if (!editingFlow || !editTitle.trim()) {return;}
 
     try {
       const updatedFlow = {
@@ -349,11 +351,11 @@ const LoadFlowDialog: React.FC<LoadFlowDialogProps> = ({
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {return '0 Bytes';}
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))  } ${  sizes[i]}`;
   };
 
   const formatDate = (dateString: string): string => {
@@ -497,15 +499,15 @@ const LoadFlowDialog: React.FC<LoadFlowDialogProps> = ({
         onClose={handleMenuClose}
         onEdit={handleEdit}
         onDuplicate={() => {
-          if (menuFlowId) handleDuplicate(menuFlowId);
+          if (menuFlowId) {handleDuplicate(menuFlowId);}
           handleMenuClose();
         }}
         onExport={() => {
-          if (menuFlowId) handleExport(menuFlowId);
+          if (menuFlowId) {handleExport(menuFlowId);}
           handleMenuClose();
         }}
         onDelete={() => {
-          if (menuFlowId) handleDelete(menuFlowId);
+          if (menuFlowId) {handleDelete(menuFlowId);}
           handleMenuClose();
         }}
       />

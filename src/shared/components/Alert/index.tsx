@@ -1,12 +1,13 @@
-import React from 'react';
-import { Alert, AlertProps, Box, Typography, Chip, Tooltip } from '@mui/material';
 import {
   CheckCircle as SuccessIcon,
   Error as ErrorIcon,
   Warning as WarningIcon,
   Info as InfoIcon,
 } from '@mui/icons-material';
-import { flowVizTheme, createStatusStyle } from '../../theme/flowviz-theme';
+import { Alert, AlertProps, Box, Typography, Chip, Tooltip } from '@mui/material';
+import React from 'react';
+
+import { threatFlowTheme, createStatusStyle } from '../../theme/threatflow-theme';
 
 // Main Alert Component
 interface FlowAlertProps extends Omit<AlertProps, 'severity'> {
@@ -38,12 +39,12 @@ export const FlowAlert: React.FC<FlowAlertProps> = ({
       icon={<IconComponent />}
       sx={{
         ...statusStyle,
-        backdropFilter: flowVizTheme.effects.blur.light,
+        backdropFilter: threatFlowTheme.effects.blur.light,
         '& .MuiAlert-icon': {
-          color: flowVizTheme.colors.status[status].accent,
+          color: threatFlowTheme.colors.status[status].accent,
         },
         '& .MuiAlert-message': {
-          color: flowVizTheme.colors.status[status].text,
+          color: threatFlowTheme.colors.status[status].text,
         },
         ...sx,
       }}
@@ -55,7 +56,7 @@ export const FlowAlert: React.FC<FlowAlertProps> = ({
           sx={{
             fontWeight: 600,
             mb: children ? 0.5 : 0,
-            color: flowVizTheme.colors.status[status].text,
+            color: threatFlowTheme.colors.status[status].text,
           }}
         >
           {title}
@@ -65,7 +66,7 @@ export const FlowAlert: React.FC<FlowAlertProps> = ({
         <Typography
           variant="body2"
           sx={{
-            color: flowVizTheme.colors.status[status].text,
+            color: threatFlowTheme.colors.status[status].text,
             opacity: 0.9,
           }}
         >
@@ -88,7 +89,7 @@ export const FlowToast: React.FC<FlowToastProps> = ({
   message,
   onClose,
 }) => {
-  const statusColors = flowVizTheme.colors.status[status];
+  const statusColors = threatFlowTheme.colors.status[status];
   
   return (
     <Box
@@ -99,13 +100,13 @@ export const FlowToast: React.FC<FlowToastProps> = ({
         padding: '12px 16px',
         backgroundColor: statusColors.bg,
         border: `1px solid ${statusColors.border}`,
-        borderRadius: flowVizTheme.borderRadius.md,
-        backdropFilter: flowVizTheme.effects.blur.light,
-        boxShadow: flowVizTheme.effects.shadows.md,
+        borderRadius: threatFlowTheme.borderRadius.md,
+        backdropFilter: threatFlowTheme.effects.blur.light,
+        boxShadow: threatFlowTheme.effects.shadows.md,
         color: statusColors.text,
         fontSize: '0.875rem',
         fontWeight: 500,
-        transition: `all ${flowVizTheme.motion.normal}`,
+        transition: `all ${threatFlowTheme.motion.normal}`,
         cursor: onClose ? 'pointer' : 'default',
         '&:hover': onClose ? {
           backgroundColor: statusColors.bg.replace('0.1)', '0.15)'),
@@ -119,7 +120,7 @@ export const FlowToast: React.FC<FlowToastProps> = ({
           width: 4,
           height: 24,
           backgroundColor: statusColors.accent,
-          borderRadius: flowVizTheme.borderRadius.sm,
+          borderRadius: threatFlowTheme.borderRadius.sm,
           flexShrink: 0,
         }}
       />
@@ -154,7 +155,7 @@ export const StatusChip = React.forwardRef<HTMLDivElement, StatusChipProps>((pro
     ...other
   } = props;
   
-  const statusColors = flowVizTheme.colors.status[status];
+  const statusColors = threatFlowTheme.colors.status[status];
   
   return (
     <Chip
@@ -166,19 +167,19 @@ export const StatusChip = React.forwardRef<HTMLDivElement, StatusChipProps>((pro
         backgroundColor: variant === 'filled' ? statusColors.bg : 'transparent',
         color: statusColors.text,
         border: `1px solid ${statusColors.border}`,
-        borderRadius: flowVizTheme.borderRadius.sm,
+        borderRadius: threatFlowTheme.borderRadius.sm,
         fontSize: size === 'small' ? '0.7rem' : '0.75rem',
         fontWeight: 700,
         letterSpacing: '0.05em',
         height: size === 'small' ? '20px' : '24px',
         textTransform: 'uppercase',
-        transition: `all ${flowVizTheme.motion.normal}`,
+        transition: `all ${threatFlowTheme.motion.normal}`,
         '&:hover': {
           backgroundColor: variant === 'filled' 
             ? statusColors.bg.replace('0.1)', '0.15)')
             : statusColors.bg,
           transform: 'translateY(-1px)',
-          boxShadow: flowVizTheme.effects.shadows.sm,
+          boxShadow: threatFlowTheme.effects.shadows.sm,
         },
         '& .MuiChip-label': {
           padding: size === 'small' ? '0 6px' : '0 8px',
@@ -228,23 +229,23 @@ export const ConfidenceChip = React.forwardRef<HTMLDivElement, ConfidenceChipPro
       slotProps={{
         tooltip: {
           sx: {
-            backgroundColor: flowVizTheme.colors.background.glassLight,
-            color: flowVizTheme.colors.text.primary,
+            backgroundColor: threatFlowTheme.colors.background.glassLight,
+            color: threatFlowTheme.colors.text.primary,
             fontSize: '0.75rem',
             fontWeight: 500,
             padding: '8px 12px',
             borderRadius: '6px',  // More subtle radius
-            border: `1px solid ${flowVizTheme.colors.surface.border.default}`,
-            backdropFilter: flowVizTheme.effects.blur.light,
-            boxShadow: flowVizTheme.effects.shadows.lg,
+            border: `1px solid ${threatFlowTheme.colors.surface.border.default}`,
+            backdropFilter: threatFlowTheme.effects.blur.light,
+            boxShadow: threatFlowTheme.effects.shadows.lg,
             maxWidth: '240px'
           }
         },
         arrow: {
           sx: {
-            color: flowVizTheme.colors.background.glassLight,
+            color: threatFlowTheme.colors.background.glassLight,
             '&::before': {
-              border: `1px solid ${flowVizTheme.colors.surface.border.default}`
+              border: `1px solid ${threatFlowTheme.colors.surface.border.default}`
             }
           }
         }
@@ -272,19 +273,19 @@ export const LoadingAlert: React.FC<LoadingAlertProps> = ({
         alignItems: 'center',
         gap: 1.5,
         padding: '12px 16px',
-        backgroundColor: flowVizTheme.colors.surface.rest,
-        border: `1px solid ${flowVizTheme.colors.surface.border.default}`,
-        borderRadius: flowVizTheme.borderRadius.md,
-        backdropFilter: flowVizTheme.effects.blur.light,
-        color: flowVizTheme.colors.text.secondary,
+        backgroundColor: threatFlowTheme.colors.surface.rest,
+        border: `1px solid ${threatFlowTheme.colors.surface.border.default}`,
+        borderRadius: threatFlowTheme.borderRadius.md,
+        backdropFilter: threatFlowTheme.effects.blur.light,
+        color: threatFlowTheme.colors.text.secondary,
       }}
     >
       <Box
         sx={{
           width: 16,
           height: 16,
-          border: `2px solid ${flowVizTheme.colors.text.tertiary}`,
-          borderTop: `2px solid ${flowVizTheme.colors.text.secondary}`,
+          border: `2px solid ${threatFlowTheme.colors.text.tertiary}`,
+          borderTop: `2px solid ${threatFlowTheme.colors.text.secondary}`,
           borderRadius: '50%',
           animation: 'spin 1s linear infinite',
           '@keyframes spin': {
@@ -296,7 +297,7 @@ export const LoadingAlert: React.FC<LoadingAlertProps> = ({
       <Typography
         variant="body2"
         sx={{
-          color: flowVizTheme.colors.text.secondary,
+          color: threatFlowTheme.colors.text.secondary,
           fontSize: '0.875rem',
         }}
       >

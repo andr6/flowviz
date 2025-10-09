@@ -1,4 +1,6 @@
-import React from 'react';
+import {
+  MoreVert as MoreVertIcon,
+} from '@mui/icons-material';
 import {
   ListItem,
   ListItemText,
@@ -7,12 +9,9 @@ import {
   Chip,
   Box,
   Typography,
-  Tooltip,
 } from '@mui/material';
-import {
-  MoreVert as MoreVertIcon,
-  Info as InfoIcon,
-} from '@mui/icons-material';
+import React from 'react';
+
 import { SavedFlow } from '../../types/SavedFlow';
 
 interface FlowListItemProps {

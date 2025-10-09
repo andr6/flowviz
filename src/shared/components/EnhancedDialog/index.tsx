@@ -1,4 +1,4 @@
-import React from 'react';
+import CloseIcon from '@mui/icons-material/Close';
 import {
   Dialog,
   DialogTitle,
@@ -6,12 +6,12 @@ import {
   DialogActions,
   Button,
   IconButton,
-  Box,
   styled,
   DialogProps,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import { flowVizTheme, createGlassStyle, createInteractiveStyle } from '../../theme/flowviz-theme';
+import React from 'react';
+
+import { threatFlowTheme, createGlassStyle, createInteractiveStyle } from '../../theme/threatflow-theme';
 
 // Glass dialog variants
 const createGlassDialogStyles = ({
@@ -58,43 +58,43 @@ const StyledDialog = styled(Dialog, {
 );
 
 const StyledDialogTitle = styled(DialogTitle)({
-  color: flowVizTheme.colors.text.primary,
+  color: threatFlowTheme.colors.text.primary,
   fontSize: '1.125rem',
   fontWeight: 600,
   letterSpacing: '-0.02em',
-  paddingBottom: flowVizTheme.spacing.md,
-  paddingTop: flowVizTheme.spacing.lg,
-  paddingLeft: flowVizTheme.spacing.lg,
-  paddingRight: flowVizTheme.spacing.xl, // Extra space for close button
+  paddingBottom: threatFlowTheme.spacing.md,
+  paddingTop: threatFlowTheme.spacing.lg,
+  paddingLeft: threatFlowTheme.spacing.lg,
+  paddingRight: threatFlowTheme.spacing.xl, // Extra space for close button
   // No border bottom - maintains clean design
   position: 'relative',
 });
 
 // DialogContent with proper spacing
 const StyledDialogContent = styled(DialogContent)({
-  padding: flowVizTheme.spacing.lg,
-  paddingTop: `${flowVizTheme.spacing.lg}px !important`,
+  padding: threatFlowTheme.spacing.lg,
+  paddingTop: `${threatFlowTheme.spacing.lg}px !important`,
 });
 
 // DialogActions styling (no border separator)
 const StyledDialogActions = styled(DialogActions)({
   padding: '16px 24px 20px',
-  gap: flowVizTheme.spacing.sm,
+  gap: threatFlowTheme.spacing.sm,
   // No border top - maintains clean design
 });
 
 // Close button
 const CloseButton = styled(IconButton)({
   position: 'absolute',
-  right: flowVizTheme.spacing.md,
+  right: threatFlowTheme.spacing.md,
   top: '50%',
   transform: 'translateY(-50%)',
-  color: flowVizTheme.colors.text.secondary,
+  color: threatFlowTheme.colors.text.secondary,
   ...createInteractiveStyle(),
-  padding: flowVizTheme.spacing.sm,
+  padding: threatFlowTheme.spacing.sm,
   '&:hover': {
-    color: flowVizTheme.colors.text.primary,
-    backgroundColor: flowVizTheme.colors.surface.hover,
+    color: threatFlowTheme.colors.text.primary,
+    backgroundColor: threatFlowTheme.colors.surface.hover,
   }
 });
 
@@ -120,9 +120,9 @@ export const PrimaryButton = styled(Button)({
     transform: 'translateY(0)',
   },
   '&:disabled': {
-    background: flowVizTheme.colors.surface.rest,
-    color: flowVizTheme.colors.text.disabled,
-    borderColor: flowVizTheme.colors.surface.border.subtle,
+    background: threatFlowTheme.colors.surface.rest,
+    color: threatFlowTheme.colors.text.disabled,
+    borderColor: threatFlowTheme.colors.surface.border.subtle,
   }
 });
 

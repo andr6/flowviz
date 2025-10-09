@@ -6,10 +6,10 @@ export * from './types';
 export * from './interfaces';
 
 // Service factory for easy instantiation
-import { ImageProcessor } from './ImageProcessor';
+import { ImageDownloader } from './downloaders/ImageDownloader';
 import { ImageExtractor } from './extractors/ImageExtractor';
 import { ImageFilter } from './filters/ImageFilter';
-import { ImageDownloader } from './downloaders/ImageDownloader';
+import { ImageProcessor } from './ImageProcessor';
 import { ImageOptimizer } from './optimizers/ImageOptimizer';
 
 // Factory function to create a fully configured ImageProcessor

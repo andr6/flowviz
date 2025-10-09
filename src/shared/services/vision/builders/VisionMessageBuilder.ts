@@ -1,6 +1,6 @@
+import { VISION_PROMPT_CONFIG } from '../config';
 import { IVisionMessageBuilder } from '../interfaces';
 import { ImageInfo } from '../types';
-import { VISION_PROMPT_CONFIG } from '../config';
 
 export class VisionMessageBuilder implements IVisionMessageBuilder {
   async buildMessageContent(images: ImageInfo[], prompt: string): Promise<any[]> {

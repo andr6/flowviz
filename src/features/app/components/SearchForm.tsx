@@ -1,3 +1,8 @@
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import LinkIcon from '@mui/icons-material/Link';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import SearchIcon from '@mui/icons-material/Search';
+import TextFieldsIcon from '@mui/icons-material/TextFields';
 import {
   Box,
   Container,
@@ -5,14 +10,12 @@ import {
   Paper,
   Chip,
 } from '@mui/material';
-import LinkIcon from '@mui/icons-material/Link';
-import SearchIcon from '@mui/icons-material/Search';
-import TextFieldsIcon from '@mui/icons-material/TextFields';
 import { keyframes } from '@mui/system';
-import { SearchInputURL, SearchInputMultiline } from '../../../shared/components/SearchInput';
+
 import { HeroSubmitButton } from '../../../shared/components/Button';
-import { CaptionText } from '../../../shared/components/Typography';
-import { flowVizTheme } from '../../../shared/theme/flowviz-theme';
+import { SearchInputURL, SearchInputMultiline } from '../../../shared/components/SearchInput';
+import { LIMITS } from '../../../shared/constants/AppConstants';
+import { threatFlowTheme } from '../../../shared/theme/threatflow-theme';
 
 const streamingGradient = keyframes`
   0% {
@@ -23,31 +26,27 @@ const streamingGradient = keyframes`
   }
 `;
 
-const TEXT_LIMITS = {
-  MAX_CHARS: 650000,
-  WARNING_CHARS: 500000,
-  MAX_WORDS: Math.floor(650000 / 5),
-} as const;
-
 const getTextStats = (text: string) => {
   const chars = text.length;
   const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-  const isNearLimit = chars > TEXT_LIMITS.WARNING_CHARS;
-  const isOverLimit = chars > TEXT_LIMITS.MAX_CHARS;
+  const isNearLimit = chars > LIMITS.TEXT.WARNING_CHARS;
+  const isOverLimit = chars > LIMITS.TEXT.MAX_CHARS;
   return { chars, words, isNearLimit, isOverLimit };
 };
 
 interface SearchFormProps {
   isLoading: boolean;
   isStreaming: boolean;
-  inputMode: 'url' | 'text';
+  inputMode: 'url' | 'text' | 'pdf';
   url: string;
   textContent: string;
+  pdfFile: File | null;
   urlError: boolean;
   urlHelperText: string;
-  onInputModeChange: (mode: 'url' | 'text') => void;
+  onInputModeChange: (mode: 'url' | 'text' | 'pdf') => void;
   onUrlChange: (url: string) => void;
   onTextChange: (text: string) => void;
+  onPdfChange: (file: File | null) => void;
   onSubmit: (e: React.FormEvent) => void;
 }
 
@@ -57,134 +56,179 @@ export default function SearchForm({
   inputMode,
   url,
   textContent,
+  pdfFile,
   urlError,
   urlHelperText,
   onInputModeChange,
   onUrlChange,
   onTextChange,
+  onPdfChange,
   onSubmit,
 }: SearchFormProps) {
   return (
-    <Container 
-      maxWidth="md" 
-      sx={{ 
-        mt: { xs: 4, md: 8 },
-        mb: 4,
-        px: { xs: 2, sm: 3 },
-        position: 'relative',
-        zIndex: 1,
-      }}
-    >
-      <Box sx={{ textAlign: 'center', mb: 6 }}>
-        <Typography
-          variant="h2"
-          sx={{
-            color: '#fff',
-            fontWeight: 700,
-            mb: 2,
-            fontSize: { xs: '2.5rem', md: '3.5rem' },
-            letterSpacing: '-0.02em',
-            lineHeight: 1.2,
-            background: isStreaming 
-              ? 'linear-gradient(90deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 1) 25%, rgba(255, 255, 255, 1) 50%, rgba(255, 255, 255, 1) 75%, rgba(255, 255, 255, 0.4) 100%)'
-              : 'linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.85) 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            textShadow: '0 0 80px rgba(255, 255, 255, 0.1)',
-            ...(isStreaming && {
-              backgroundSize: '200% 100%',
-              animation: `${streamingGradient} 2s ease-in-out infinite`,
-            }),
-          }}
-        >
-          FlowViz
-        </Typography>
-        
-        <Typography
-          variant="h6"
-          sx={{
-            color: 'rgba(255, 255, 255, 0.85)',
-            fontWeight: 400,
-            maxWidth: '600px',
-            mx: 'auto',
-            lineHeight: 1.6,
-            letterSpacing: '0.01em',
-          }}
-        >
-          Real-time visualization of attack patterns from threat intelligence reports
-        </Typography>
-      </Box>
+    <Box sx={{ maxWidth: 800, mx: 'auto' }}>
 
       <Paper
         elevation={0}
         sx={{
-          p: { xs: 3, md: 4 },
-          backgroundColor: flowVizTheme.colors.background.glass,
-          backdropFilter: flowVizTheme.effects.blur.heavy,
-          border: `1px solid ${flowVizTheme.colors.surface.border.default}`,
-          borderRadius: 3,
+          p: { xs: 4, md: 5 },
+          backgroundColor: threatFlowTheme.colors.background.glassHeavy,
+          backdropFilter: threatFlowTheme.effects.blur['2xl'],
+          border: `1px solid ${threatFlowTheme.colors.surface.border.default}`,
+          borderRadius: threatFlowTheme.borderRadius['2xl'],
           position: 'relative',
           overflow: 'hidden',
+          boxShadow: `
+            ${threatFlowTheme.effects.shadows.xl}, 
+            inset 0 1px 0 rgba(255, 255, 255, 0.1),
+            0 0 60px rgba(0, 225, 255, 0.08)
+          `,
+          // Enhanced professional border effects
           '&::before': {
             content: '""',
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
-            height: '1px',
-            background: `linear-gradient(90deg, transparent, ${flowVizTheme.colors.surface.border.default}, transparent)`,
+            height: '2px',
+            background: `linear-gradient(90deg, transparent 0%, ${threatFlowTheme.colors.brand.primary}40 30%, ${threatFlowTheme.colors.brand.primary}60 50%, ${threatFlowTheme.colors.brand.primary}40 70%, transparent 100%)`,
+            boxShadow: `0 0 10px ${threatFlowTheme.colors.brand.primary}30`,
+          },
+          // Subtle background pattern
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: `
+              radial-gradient(circle at 20% 80%, ${threatFlowTheme.colors.brand.light} 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(0, 225, 255, 0.05) 0%, transparent 50%),
+              radial-gradient(circle at 40% 40%, rgba(255, 112, 67, 0.03) 0%, transparent 50%)
+            `,
+            pointerEvents: 'none',
+            zIndex: 0,
+          },
+          // Ensure content is above background effects
+          '& > *': {
+            position: 'relative',
+            zIndex: 1,
           },
         }}
       >
-        {/* Input Mode Tabs */}
+        {/* Enhanced Professional Input Mode Tabs */}
         <Box sx={{ 
-          mb: 4,
+          mb: 5,
           display: 'flex',
           justifyContent: 'center'
         }}>
           <Box sx={{
             display: 'inline-flex',
             gap: '2px',
-            p: '3px',
-            background: `linear-gradient(145deg, ${flowVizTheme.colors.surface.rest} 0%, ${flowVizTheme.colors.surface.rest} 100%)`,
-            borderRadius: '16px',
-            border: `1px solid ${flowVizTheme.colors.surface.border.subtle}`,
-            backdropFilter: flowVizTheme.effects.blur.heavy,
-            boxShadow: flowVizTheme.effects.shadows.sm,
+            p: '4px',
+            background: `
+              linear-gradient(145deg, ${threatFlowTheme.colors.background.secondary} 0%, ${threatFlowTheme.colors.background.tertiary} 100%),
+              radial-gradient(circle at 50% 50%, ${threatFlowTheme.colors.brand.light} 0%, transparent 60%)
+            `,
+            borderRadius: '20px',
+            border: `1px solid ${threatFlowTheme.colors.surface.border.emphasis}`,
+            backdropFilter: threatFlowTheme.effects.blur.xl,
+            boxShadow: `
+              ${threatFlowTheme.effects.shadows.lg},
+              inset 0 1px 0 rgba(255, 255, 255, 0.1),
+              0 0 30px rgba(0, 225, 255, 0.1)
+            `,
+            position: 'relative',
+            overflow: 'hidden',
+            // Professional gradient overlay
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '1px',
+              background: `linear-gradient(90deg, transparent, ${threatFlowTheme.colors.brand.primary}40, transparent)`,
+            },
           }}>
             <Box
+              component="button"
+              role="tab"
+              tabIndex={0}
+              aria-selected={inputMode === 'url'}
+              aria-label="Switch to URL analysis mode"
               onClick={() => onInputModeChange('url')}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onInputModeChange('url');
+                }
+                if (e.key === 'ArrowRight') {
+                  e.preventDefault();
+                  onInputModeChange('text');
+                }
+              }}
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1.25,
-                px: 3.5,
-                py: 1.5,
-                borderRadius: '13px',
+                gap: 1.5,
+                px: 4,
+                py: 2,
+                borderRadius: '16px',
                 cursor: 'pointer',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                transition: `all ${threatFlowTheme.motion.normal}`,
                 position: 'relative',
                 overflow: 'hidden',
+                backgroundColor: 'transparent',
                 background: inputMode === 'url' 
-                  ? `linear-gradient(135deg, ${flowVizTheme.colors.surface.active} 0%, ${flowVizTheme.colors.surface.hover} 100%)`
+                  ? `
+                    linear-gradient(135deg, ${threatFlowTheme.colors.brand.lightMedium} 0%, ${threatFlowTheme.colors.surface.active} 100%),
+                    radial-gradient(circle at 50% 50%, ${threatFlowTheme.colors.brand.light} 0%, transparent 60%)
+                  `
                   : 'transparent',
-                backdropFilter: inputMode === 'url' ? flowVizTheme.effects.blur.light : 'none',
+                backdropFilter: inputMode === 'url' ? threatFlowTheme.effects.blur.md : 'none',
                 boxShadow: inputMode === 'url'
-                  ? flowVizTheme.effects.shadows.sm
+                  ? `${threatFlowTheme.effects.shadows.md}, 0 0 20px ${threatFlowTheme.colors.brand.primary}20`
                   : 'none',
                 border: inputMode === 'url'
-                  ? `1px solid ${flowVizTheme.colors.surface.border.subtle}`
+                  ? `1px solid ${threatFlowTheme.colors.brand.primary}40`
                   : '1px solid transparent',
                 color: inputMode === 'url'
-                  ? flowVizTheme.colors.text.primary
-                  : flowVizTheme.colors.text.tertiary,
+                  ? threatFlowTheme.colors.text.primary
+                  : threatFlowTheme.colors.text.tertiary,
+                // Professional glow effect for active state
+                ...(inputMode === 'url' && {
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '1px',
+                    background: `linear-gradient(90deg, transparent, ${threatFlowTheme.colors.brand.primary}60, transparent)`,
+                  },
+                }),
+                '&:focus': {
+                  outline: 'none',
+                  boxShadow: inputMode === 'url'
+                    ? `${threatFlowTheme.effects.shadows.lg}, 0 0 0 3px ${threatFlowTheme.colors.brand.primary}40`
+                    : `${threatFlowTheme.effects.shadows.md}, 0 0 0 2px ${threatFlowTheme.colors.surface.border.focus}`,
+                },
                 '&:hover': {
                   background: inputMode === 'url'
-                    ? `linear-gradient(135deg, ${flowVizTheme.colors.surface.active} 0%, ${flowVizTheme.colors.surface.hover} 100%)`
-                    : flowVizTheme.colors.surface.rest,
+                    ? `
+                      linear-gradient(135deg, ${threatFlowTheme.colors.brand.lightMedium} 0%, ${threatFlowTheme.colors.surface.active} 100%),
+                      radial-gradient(circle at 50% 50%, ${threatFlowTheme.colors.brand.light} 0%, transparent 60%)
+                    `
+                    : threatFlowTheme.colors.surface.hover,
                   color: inputMode === 'url'
-                    ? flowVizTheme.colors.text.primary
-                    : flowVizTheme.colors.text.secondary,
+                    ? threatFlowTheme.colors.text.primary
+                    : threatFlowTheme.colors.text.secondary,
+                  transform: 'translateY(-1px)',
+                  boxShadow: inputMode === 'url'
+                    ? `${threatFlowTheme.effects.shadows.lg}, 0 0 25px ${threatFlowTheme.colors.brand.primary}30`
+                    : threatFlowTheme.effects.shadows.sm,
                 },
               }}
             >
@@ -217,25 +261,25 @@ export default function SearchForm({
                 position: 'relative',
                 overflow: 'hidden',
                 background: inputMode === 'text' 
-                  ? `linear-gradient(135deg, ${flowVizTheme.colors.surface.active} 0%, ${flowVizTheme.colors.surface.hover} 100%)`
+                  ? `linear-gradient(135deg, ${threatFlowTheme.colors.surface.active} 0%, ${threatFlowTheme.colors.surface.hover} 100%)`
                   : 'transparent',
-                backdropFilter: inputMode === 'text' ? flowVizTheme.effects.blur.light : 'none',
+                backdropFilter: inputMode === 'text' ? threatFlowTheme.effects.blur.light : 'none',
                 boxShadow: inputMode === 'text'
-                  ? flowVizTheme.effects.shadows.sm
+                  ? threatFlowTheme.effects.shadows.sm
                   : 'none',
                 border: inputMode === 'text'
-                  ? `1px solid ${flowVizTheme.colors.surface.border.subtle}`
+                  ? `1px solid ${threatFlowTheme.colors.surface.border.subtle}`
                   : '1px solid transparent',
                 color: inputMode === 'text'
-                  ? flowVizTheme.colors.text.primary
-                  : flowVizTheme.colors.text.tertiary,
+                  ? threatFlowTheme.colors.text.primary
+                  : threatFlowTheme.colors.text.tertiary,
                 '&:hover': {
                   background: inputMode === 'text'
-                    ? `linear-gradient(135deg, ${flowVizTheme.colors.surface.active} 0%, ${flowVizTheme.colors.surface.hover} 100%)`
-                    : flowVizTheme.colors.surface.rest,
+                    ? `linear-gradient(135deg, ${threatFlowTheme.colors.surface.active} 0%, ${threatFlowTheme.colors.surface.hover} 100%)`
+                    : threatFlowTheme.colors.surface.rest,
                   color: inputMode === 'text'
-                    ? flowVizTheme.colors.text.primary
-                    : flowVizTheme.colors.text.secondary,
+                    ? threatFlowTheme.colors.text.primary
+                    : threatFlowTheme.colors.text.secondary,
                 },
               }}
             >
@@ -253,6 +297,57 @@ export default function SearchForm({
                 Paste Text
               </Typography>
             </Box>
+
+            <Box
+              onClick={() => onInputModeChange('pdf')}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.25,
+                px: 3.5,
+                py: 1.5,
+                borderRadius: '13px',
+                cursor: 'pointer',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                position: 'relative',
+                overflow: 'hidden',
+                background: inputMode === 'pdf' 
+                  ? `linear-gradient(135deg, ${threatFlowTheme.colors.surface.active} 0%, ${threatFlowTheme.colors.surface.hover} 100%)`
+                  : 'transparent',
+                backdropFilter: inputMode === 'pdf' ? threatFlowTheme.effects.blur.light : 'none',
+                boxShadow: inputMode === 'pdf'
+                  ? threatFlowTheme.effects.shadows.sm
+                  : 'none',
+                border: inputMode === 'pdf'
+                  ? `1px solid ${threatFlowTheme.colors.surface.border.subtle}`
+                  : '1px solid transparent',
+                color: inputMode === 'pdf'
+                  ? threatFlowTheme.colors.text.primary
+                  : threatFlowTheme.colors.text.tertiary,
+                '&:hover': {
+                  background: inputMode === 'pdf'
+                    ? `linear-gradient(135deg, ${threatFlowTheme.colors.surface.active} 0%, ${threatFlowTheme.colors.surface.hover} 100%)`
+                    : threatFlowTheme.colors.surface.rest,
+                  color: inputMode === 'pdf'
+                    ? threatFlowTheme.colors.text.primary
+                    : threatFlowTheme.colors.text.secondary,
+                },
+              }}
+            >
+              <PictureAsPdfIcon sx={{ 
+                fontSize: '18px',
+                opacity: inputMode === 'pdf' ? 0.9 : 0.6,
+                transition: 'all 0.3s ease',
+              }} />
+              <Typography sx={{ 
+                fontSize: '15px',
+                fontWeight: 500,
+                letterSpacing: '0.01em',
+                transition: 'opacity 0.3s ease, color 0.3s ease',
+              }}>
+                Upload PDF
+              </Typography>
+            </Box>
           </Box>
         </Box>
 
@@ -268,6 +363,91 @@ export default function SearchForm({
               helperText={urlHelperText}
               sx={{ mb: 3 }}
             />
+          ) : inputMode === 'pdf' ? (
+            <Box sx={{ mb: 3 }}>
+              <Box
+                component="label"
+                htmlFor="pdf-upload"
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 2,
+                  p: 6,
+                  borderRadius: threatFlowTheme.borderRadius.xl,
+                  border: `2px dashed ${pdfFile ? threatFlowTheme.colors.accent.secure : threatFlowTheme.colors.surface.border.default}`,
+                  backgroundColor: pdfFile ? `${threatFlowTheme.colors.accent.secure  }10` : threatFlowTheme.colors.surface.rest,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    borderColor: threatFlowTheme.colors.brand.primary,
+                    backgroundColor: threatFlowTheme.colors.brand.light,
+                  },
+                }}
+              >
+                <input
+                  id="pdf-upload"
+                  type="file"
+                  accept=".pdf"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file && file.type === 'application/pdf' && file.size <= 10 * 1024 * 1024) {
+                      onPdfChange(file);
+                    } else if (file && file.size > 10 * 1024 * 1024) {
+                      alert('File size must be less than 10MB');
+                      e.target.value = '';
+                    } else if (file && file.type !== 'application/pdf') {
+                      alert('Please select a PDF file');
+                      e.target.value = '';
+                    }
+                  }}
+                />
+                <CloudUploadIcon 
+                  sx={{ 
+                    fontSize: 48, 
+                    color: pdfFile ? threatFlowTheme.colors.accent.secure : threatFlowTheme.colors.text.secondary,
+                    opacity: 0.8,
+                  }} 
+                />
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      color: pdfFile ? threatFlowTheme.colors.accent.secure : threatFlowTheme.colors.text.primary,
+                      fontWeight: 600,
+                      mb: 1,
+                    }}
+                  >
+                    {pdfFile ? pdfFile.name : 'Click to upload PDF'}
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: threatFlowTheme.colors.text.tertiary,
+                      maxWidth: '400px',
+                    }}
+                  >
+                    {pdfFile 
+                      ? `Size: ${(pdfFile.size / 1024 / 1024).toFixed(2)} MB • Click to change`
+                      : 'Upload a cybersecurity article or report in PDF format (max 10MB)'
+                    }
+                  </Typography>
+                </Box>
+                {pdfFile && (
+                  <Chip
+                    label="PDF Ready"
+                    color="success"
+                    size="small"
+                    sx={{
+                      backgroundColor: `${threatFlowTheme.colors.accent.secure  }20`,
+                      color: threatFlowTheme.colors.accent.secure,
+                      border: `1px solid ${threatFlowTheme.colors.accent.secure}40`,
+                    }}
+                  />
+                )}
+              </Box>
+            </Box>
           ) : (
             <Box sx={{ mb: 3 }}>
               <SearchInputMultiline
@@ -281,10 +461,10 @@ export default function SearchForm({
                 sx={{
                   '& .MuiOutlinedInput-notchedOutline': {
                     borderColor: getTextStats(textContent).isOverLimit 
-                      ? flowVizTheme.colors.status.error.border
+                      ? threatFlowTheme.colors.status.error.border
                       : getTextStats(textContent).isNearLimit 
-                        ? flowVizTheme.colors.status.warning.border
-                        : flowVizTheme.colors.surface.border.default,
+                        ? threatFlowTheme.colors.status.warning.border
+                        : threatFlowTheme.colors.surface.border.default,
                   },
                 }}
               />
@@ -300,14 +480,14 @@ export default function SearchForm({
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                   <Typography variant="caption" sx={{ 
                     color: getTextStats(textContent).isOverLimit 
-                      ? flowVizTheme.colors.status.error.text
+                      ? threatFlowTheme.colors.status.error.text
                       : getTextStats(textContent).isNearLimit 
-                        ? flowVizTheme.colors.status.warning.text
-                        : flowVizTheme.colors.text.tertiary
+                        ? threatFlowTheme.colors.status.warning.text
+                        : threatFlowTheme.colors.text.tertiary
                   }}>
-                    {getTextStats(textContent).chars.toLocaleString()} / {TEXT_LIMITS.MAX_CHARS.toLocaleString()} characters
+                    {getTextStats(textContent).chars.toLocaleString()} / {LIMITS.TEXT.MAX_CHARS.toLocaleString()} characters
                   </Typography>
-                  <Typography variant="caption" sx={{ color: flowVizTheme.colors.text.tertiary }}>
+                  <Typography variant="caption" sx={{ color: threatFlowTheme.colors.text.tertiary }}>
                     ~{getTextStats(textContent).words.toLocaleString()} words
                   </Typography>
                 </Box>
@@ -393,15 +573,19 @@ export default function SearchForm({
             <HeroSubmitButton
               variant="contained"
               type="submit"
-              disabled={isLoading || (inputMode === 'text' && getTextStats(textContent).isOverLimit)}
+              disabled={isLoading || (inputMode === 'text' && getTextStats(textContent).isOverLimit) || (inputMode === 'pdf' && !pdfFile)}
               isLoading={isLoading}
             >
-              <SearchIcon sx={{ fontSize: 20, color: flowVizTheme.colors.text.primary }} />
-              <span>{inputMode === 'url' ? 'Analyze Article' : 'Analyze Text'}</span>
+              <SearchIcon sx={{ fontSize: 20, color: threatFlowTheme.colors.text.primary }} />
+              <span>
+                {inputMode === 'url' ? 'Analyze Article' : 
+                 inputMode === 'pdf' ? 'Analyze PDF' : 
+                 'Analyze Text'}
+              </span>
             </HeroSubmitButton>
           </Box>
         </Box>
       </Paper>
-    </Container>
+    </Box>
   );
 }

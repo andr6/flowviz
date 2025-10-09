@@ -1,4 +1,8 @@
-import { Component, ErrorInfo, ReactNode } from 'react';
+import {
+  ErrorOutline as ErrorOutlineIcon,
+  Refresh as RefreshIcon,
+  Home as HomeIcon
+} from '@mui/icons-material';
 import {
   Box,
   Typography,
@@ -8,16 +12,13 @@ import {
   Container,
   Paper
 } from '@mui/material';
-import {
-  ErrorOutline as ErrorOutlineIcon,
-  Refresh as RefreshIcon,
-  Home as HomeIcon
-} from '@mui/icons-material';
+import { Component, ErrorInfo, ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
+  onRecovery?: () => void;
 }
 
 interface State {
@@ -50,12 +51,21 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   private handleReload = () => {
-    window.location.reload();
+    if (this.props.onRecovery) {
+      this.setState({ hasError: false, error: undefined, errorInfo: undefined });
+      this.props.onRecovery();
+    } else {
+      window.location.reload();
+    }
   };
 
   private handleGoHome = () => {
     this.setState({ hasError: false, error: undefined, errorInfo: undefined });
-    window.location.href = '/';
+    if (this.props.onRecovery) {
+      this.props.onRecovery();
+    } else {
+      window.location.href = '/';
+    }
   };
 
   public render() {

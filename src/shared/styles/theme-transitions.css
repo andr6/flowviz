@@ -1,0 +1,118 @@
+/* Theme transition styles for smooth mode switching */
+
+:root {
+  /* Default transition duration */
+  --theme-transition-duration: 0.3s;
+  --theme-transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Apply smooth transitions to all theme-related properties */
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition: 
+    background-color var(--theme-transition-duration) var(--theme-transition-timing),
+    border-color var(--theme-transition-duration) var(--theme-transition-timing),
+    color var(--theme-transition-duration) var(--theme-transition-timing),
+    fill var(--theme-transition-duration) var(--theme-transition-timing),
+    stroke var(--theme-transition-duration) var(--theme-transition-timing),
+    box-shadow var(--theme-transition-duration) var(--theme-transition-timing),
+    backdrop-filter var(--theme-transition-duration) var(--theme-transition-timing) !important;
+}
+
+/* Disable transitions during initial load */
+.theme-loading *,
+.theme-loading *::before,
+.theme-loading *::after {
+  transition: none !important;
+}
+
+/* Smooth scrollbar transitions */
+.theme-transition ::-webkit-scrollbar-track {
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+.theme-transition ::-webkit-scrollbar-thumb {
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Prevent layout shifts during transitions */
+.theme-transition img {
+  transition: 
+    filter var(--theme-transition-duration) var(--theme-transition-timing),
+    opacity var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Theme-specific custom properties for CSS variables */
+[data-theme="dark"] {
+  --bg-primary: #080a0f;
+  --bg-secondary: #0f1419;
+  --bg-tertiary: #1a1f26;
+  --text-primary: rgba(255, 255, 255, 0.98);
+  --text-secondary: rgba(255, 255, 255, 0.87);
+  --text-tertiary: rgba(255, 255, 255, 0.70);
+  --brand-primary: #00e1ff;
+  --surface-border: rgba(255, 255, 255, 0.10);
+}
+
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --text-primary: rgba(0, 0, 0, 0.92);
+  --text-secondary: rgba(0, 0, 0, 0.75);
+  --text-tertiary: rgba(0, 0, 0, 0.6);
+  --brand-primary: #0ea5e9;
+  --surface-border: rgba(0, 0, 0, 0.12);
+}
+
+/* Smooth opacity transitions for theme-sensitive elements */
+.theme-transition [data-theme-sensitive] {
+  transition: opacity var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Special handling for code blocks and syntax highlighting */
+.theme-transition pre,
+.theme-transition code {
+  transition: 
+    background-color var(--theme-transition-duration) var(--theme-transition-timing),
+    color var(--theme-transition-duration) var(--theme-transition-timing),
+    border-color var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Smooth transitions for Material-UI components */
+.theme-transition .MuiPaper-root,
+.theme-transition .MuiButton-root,
+.theme-transition .MuiTextField-root,
+.theme-transition .MuiIconButton-root {
+  transition: 
+    background-color var(--theme-transition-duration) var(--theme-transition-timing),
+    border-color var(--theme-transition-duration) var(--theme-transition-timing),
+    color var(--theme-transition-duration) var(--theme-transition-timing),
+    box-shadow var(--theme-transition-duration) var(--theme-transition-timing) !important;
+}
+
+/* Ensure SVG icons transition smoothly */
+.theme-transition svg {
+  transition: 
+    fill var(--theme-transition-duration) var(--theme-transition-timing),
+    stroke var(--theme-transition-duration) var(--theme-transition-timing),
+    color var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Prevent transition flicker on hover states */
+.theme-transition *:hover {
+  transition-delay: 0ms;
+}
+
+/* Optimized transitions for performance */
+@media (prefers-reduced-motion: reduce) {
+  .theme-transition *,
+  .theme-transition *::before,
+  .theme-transition *::after {
+    transition: none !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

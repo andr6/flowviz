@@ -1,8 +1,14 @@
-import { FlowConverter } from './flowConverter';
 import { FlowConverterRefactored } from './flowConverterRefactored';
 
 export * from './types';
 export * from './errors';
 export * from './config';
 
-export { FlowConverter, FlowConverterRefactored };
+export { FlowConverterRefactored };
+
+// Export Interactive Visualization Improvements services
+export * from './confidenceIndicators';
+export * from './nodeBookmarks';
+export * from './nodeClustering';
+export * from './nodeThemes';
+export * from './screenshotMode';

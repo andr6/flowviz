@@ -1,6 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
+
 import { AttackFlowNode, FlowEdge } from '../../types/attack-flow';
 import { ExtractedAttackInfo } from '../types';
+
 import { INodeConverter } from './base/INodeConverter';
 
 export class OperatorNodeConverter implements INodeConverter {

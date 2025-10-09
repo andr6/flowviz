@@ -1,6 +1,6 @@
+import { TOKEN_ESTIMATION } from '../config';
 import { IImageOptimizer } from '../interfaces';
 import { ImageInfo } from '../types';
-import { TOKEN_ESTIMATION } from '../config';
 
 export class ImageOptimizer implements IImageOptimizer {
   optimizeSize(base64Data: string, _mediaType: string): string {

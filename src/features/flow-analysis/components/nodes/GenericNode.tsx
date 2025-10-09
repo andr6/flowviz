@@ -1,10 +1,11 @@
+import { Box } from '@mui/material';
 import { memo } from 'react';
 import { NodeProps } from 'reactflow';
-import { Box } from '@mui/material';
-import { getBaseNodeStyle } from './shared/nodeStyles';
+
+import { NodeContent } from './shared/NodeContent';
 import { NodeHandles } from './shared/NodeHandles';
 import { NodeHeader } from './shared/NodeHeader';
-import { NodeContent } from './shared/NodeContent';
+import { getBaseNodeStyle } from './shared/nodeStyles';
 
 function GenericNode({ data, selected }: NodeProps) {
   const isNewNode = data.isNewNode;

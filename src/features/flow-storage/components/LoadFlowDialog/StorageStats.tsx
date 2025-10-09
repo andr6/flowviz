@@ -1,5 +1,6 @@
-import React from 'react';
 import { Box, Typography } from '@mui/material';
+import React from 'react';
+
 import { StorageStats as StorageStatsType } from '../../types/SavedFlow';
 
 interface StorageStatsProps {
@@ -8,7 +9,7 @@ interface StorageStatsProps {
 }
 
 const StorageStats: React.FC<StorageStatsProps> = ({ stats, formatFileSize }) => {
-  if (!stats) return null;
+  if (!stats) {return null;}
 
   return (
     <Box sx={{ 

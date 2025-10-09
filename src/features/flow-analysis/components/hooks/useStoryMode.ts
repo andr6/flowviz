@@ -54,7 +54,7 @@ export const useStoryMode = ({
 
   // Generate story steps based on node positions (top to bottom)
   const generateStorySteps = useCallback((): StoryStep[] => {
-    if (nodes.length === 0) return [];
+    if (nodes.length === 0) {return [];}
 
     // Sort nodes by Y position (top to bottom)
     const sortedNodes = [...nodes].sort((a, b) => 
@@ -144,10 +144,10 @@ export const useStoryMode = ({
       }
     }
 
-    if (nodeTypes.includes('tool')) return `Tools & Techniques`;
-    if (nodeTypes.includes('malware')) return `Malware Deployment`;
-    if (nodeTypes.includes('infrastructure')) return `Infrastructure Setup`;
-    if (nodeTypes.includes('asset')) return `Target Assets`;
+    if (nodeTypes.includes('tool')) {return `Tools & Techniques`;}
+    if (nodeTypes.includes('malware')) {return `Malware Deployment`;}
+    if (nodeTypes.includes('infrastructure')) {return `Infrastructure Setup`;}
+    if (nodeTypes.includes('asset')) {return `Target Assets`;}
 
     return `Step ${stepIndex + 1}`;
   };
@@ -212,7 +212,7 @@ export const useStoryMode = ({
 
   // Story control functions
   const playStory = useCallback(() => {
-    if (!reactFlowInstance) return;
+    if (!reactFlowInstance) {return;}
     
     // Clear any existing timeout
     if (intervalRef.current) {
@@ -221,7 +221,7 @@ export const useStoryMode = ({
     }
     
     setStoryState(prev => {
-      if (prev.steps.length === 0) return prev;
+      if (prev.steps.length === 0) {return prev;}
       
       const startStep = prev.currentStep;
       const totalSteps = prev.steps.length;
@@ -285,7 +285,7 @@ export const useStoryMode = ({
   }, []);
 
   const nextStep = useCallback(() => {
-    if (!reactFlowInstance) return;
+    if (!reactFlowInstance) {return;}
     
     // Stop any ongoing playback
     if (intervalRef.current) {
@@ -294,7 +294,7 @@ export const useStoryMode = ({
     }
     
     setStoryState(prev => {
-      if (prev.currentStep >= prev.steps.length - 1) return prev;
+      if (prev.currentStep >= prev.steps.length - 1) {return prev;}
       
       const nextStepIndex = prev.currentStep + 1;
       const step = prev.steps[nextStepIndex];
@@ -320,7 +320,7 @@ export const useStoryMode = ({
   }, [reactFlowInstance]);
 
   const prevStep = useCallback(() => {
-    if (!reactFlowInstance) return;
+    if (!reactFlowInstance) {return;}
     
     // Stop any ongoing playback
     if (intervalRef.current) {
@@ -329,7 +329,7 @@ export const useStoryMode = ({
     }
     
     setStoryState(prev => {
-      if (prev.currentStep <= 0) return prev;
+      if (prev.currentStep <= 0) {return prev;}
       
       const prevStepIndex = prev.currentStep - 1;
       const step = prev.steps[prevStepIndex];
@@ -355,7 +355,7 @@ export const useStoryMode = ({
   }, [reactFlowInstance]);
 
   const goToStep = useCallback((stepIndex: number) => {
-    if (!reactFlowInstance) return;
+    if (!reactFlowInstance) {return;}
     
     // Stop any ongoing playback
     if (intervalRef.current) {
@@ -364,7 +364,7 @@ export const useStoryMode = ({
     }
     
     setStoryState(prev => {
-      if (stepIndex < 0 || stepIndex >= prev.steps.length) return prev;
+      if (stepIndex < 0 || stepIndex >= prev.steps.length) {return prev;}
       
       const step = prev.steps[stepIndex];
       

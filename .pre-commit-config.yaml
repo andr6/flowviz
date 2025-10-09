@@ -1,0 +1,52 @@
+# Pre-commit hooks for code quality
+# Install: pip install pre-commit && pre-commit install
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=1024']  # 1MB limit
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  - repo: local
+    hooks:
+      - id: lint
+        name: ESLint
+        entry: npm run lint
+        language: system
+        files: '\.(ts|tsx|js|jsx)$'
+        pass_filenames: false
+
+      - id: format
+        name: Prettier
+        entry: npm run format
+        language: system
+        files: '\.(ts|tsx|js|jsx|json|md|yaml|yml)$'
+        pass_filenames: false
+
+      - id: type-check
+        name: TypeScript Check
+        entry: npm run type-check
+        language: system
+        files: '\.(ts|tsx)$'
+        pass_filenames: false
+
+      - id: test
+        name: Tests
+        entry: npm run test
+        language: system
+        files: '\.(ts|tsx)$'
+        pass_filenames: false
+
+      - id: security-audit
+        name: Security Audit
+        entry: npm audit --audit-level high
+        language: system
+        pass_filenames: false
+        stages: [push]

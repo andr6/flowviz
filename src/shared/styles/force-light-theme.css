@@ -1,0 +1,13 @@
+/* Theme-aware debugging styles - no longer forcing light theme */
+
+/* Light theme specific overrides (if needed) */
+[data-theme="light"] {
+  /* Light theme is now handled by index.css and React theme system */
+}
+
+/* Dark theme specific overrides (if needed) */
+[data-theme="dark"] {
+  /* Dark theme is now handled by index.css and React theme system */
+}
+
+/* Debug indicator removed for production */

@@ -1,5 +1,5 @@
-import { IVisionPromptBuilder } from '../interfaces';
 import { VISION_PROMPT_TEMPLATE, VISION_PROMPT_CONFIG } from '../config';
+import { IVisionPromptBuilder } from '../interfaces';
 
 export class VisionPromptBuilder implements IVisionPromptBuilder {
   buildPrompt(articleText: string, imageCount: number): string {

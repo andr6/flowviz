@@ -2,14 +2,14 @@ import { AttackAction, AttackOperator } from '../../../types/attack-flow';
 
 // Text handling utilities
 export const getTextStyle = (text: string) => {
-  if (!text) return { text, style: {} };
+  if (!text) {return { text, style: {} };}
   
   // Check if any word is very long (URLs, hashes, paths)
   const hasLongWord = text.split(/\s+/).some(word => word.length > 25);
   
   if (hasLongWord) {
     // Truncate text with long unbroken words
-    const truncatedText = text.length > 40 ? text.slice(0, 40).trim() + '...' : text;
+    const truncatedText = text.length > 40 ? `${text.slice(0, 40).trim()  }...` : text;
     return {
       text: truncatedText,
       style: {

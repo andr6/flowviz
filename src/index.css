@@ -4,13 +4,59 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Light theme default */
+:root,
+[data-theme="light"] {
+  color: #213547;
+  background-color: #ffffff;
+}
+
+/* Dark theme - ThreatFlow colors */
+[data-theme="dark"] {
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #080a0f;
+}
+
+/* Ensure all children use dark theme colors */
+[data-theme="dark"] *:not([style*="background"]) {
+  color: inherit;
+}
+
+/* Force dark theme on common elements */
+[data-theme="dark"] div,
+[data-theme="dark"] section,
+[data-theme="dark"] main,
+[data-theme="dark"] article,
+[data-theme="dark"] aside,
+[data-theme="dark"] header,
+[data-theme="dark"] footer {
+  background-color: inherit;
+  color: inherit;
+}
+
+/* Aggressive dark theme override for any white backgrounds */
+[data-theme="dark"] *:not([data-testid]):not([role="presentation"]) {
+  color: inherit;
+}
+
+[data-theme="dark"] .MuiPaper-root,
+[data-theme="dark"] .MuiDialog-paper,
+[data-theme="dark"] .MuiCard-root,
+[data-theme="dark"] .MuiAppBar-root {
+  background-color: #0f1419 !important;
+  color: rgba(255, 255, 255, 0.87) !important;
+}
+
+/* Ensure Material-UI containers use dark theme */
+[data-theme="dark"] .MuiContainer-root {
+  background-color: transparent !important;
 }
 
 a {
@@ -24,8 +70,6 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -35,14 +79,29 @@ h1 {
   line-height: 1.1;
 }
 
-button {
+/* Light theme buttons */
+:root button,
+[data-theme="light"] button {
   border-radius: 8px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+/* Dark theme buttons */
+[data-theme="dark"] button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #0f1419;
   cursor: pointer;
   transition: border-color 0.25s;
 }
@@ -67,13 +126,25 @@ button:focus-visible {
   }
 }
 
-/* React Flow edge label styling */
-.react-flow__edge-text {
+/* React Flow edge label styling - theme-aware */
+:root .react-flow__edge-text,
+[data-theme="light"] .react-flow__edge-text {
+  font-size: 11px !important;
+  fill: rgba(26, 26, 26, 0.8) !important;
+  font-weight: 500 !important;
+}
+
+:root .react-flow__edge-textbg,
+[data-theme="light"] .react-flow__edge-textbg {
+  fill: rgba(255, 255, 255, 0.95) !important;
+}
+
+[data-theme="dark"] .react-flow__edge-text {
   font-size: 11px !important;
   fill: rgba(255, 255, 255, 0.7) !important;
   font-weight: 500 !important;
 }
 
-.react-flow__edge-textbg {
-  fill: rgba(13, 17, 23, 0.95) !important;
+[data-theme="dark"] .react-flow__edge-textbg {
+  fill: rgba(15, 20, 25, 0.95) !important;
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { getBezierPath, ConnectionLineComponentProps } from 'reactflow';
+
 import { getEdgeParams } from './floatingEdgeHelpers';
 
 const FloatingConnectionLine: React.FC<ConnectionLineComponentProps> = ({

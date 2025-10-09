@@ -1,12 +1,3 @@
-import React, { useState } from 'react';
-import {
-  Box,
-  IconButton,
-  Typography,
-  LinearProgress,
-  Tooltip,
-  Chip
-} from '@mui/material';
 import {
   PlayArrow,
   Pause,
@@ -15,6 +6,14 @@ import {
   CenterFocusStrong,
   Replay
 } from '@mui/icons-material';
+import {
+  Box,
+  IconButton,
+  Typography,
+  LinearProgress,
+  Tooltip
+} from '@mui/material';
+import React, { useState } from 'react';
 
 interface ToolbarStoryModeControlsProps {
   storyState: any;
@@ -49,7 +48,7 @@ const ToolbarStoryModeControls: React.FC<ToolbarStoryModeControlsProps> = ({
     });
   };
 
-  if (steps.length === 0) return null;
+  if (steps.length === 0) {return null;}
 
   return (
     <Box sx={{ 

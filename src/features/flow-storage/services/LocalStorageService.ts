@@ -1,4 +1,5 @@
 import { SavedFlow, StorageStats, ImportResult } from '../types/SavedFlow';
+
 import { IFlowStorage, StorageError } from './StorageInterface';
 
 export class LocalStorageService implements IFlowStorage {
@@ -51,7 +52,7 @@ export class LocalStorageService implements IFlowStorage {
   async listFlows(): Promise<SavedFlow[]> {
     try {
       const stored = localStorage.getItem(this.STORAGE_KEY);
-      if (!stored) return [];
+      if (!stored) {return [];}
       
       const flows = JSON.parse(stored) as SavedFlow[];
       

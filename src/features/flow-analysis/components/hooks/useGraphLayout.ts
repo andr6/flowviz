@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useReactFlow, Node, Edge } from 'reactflow';
-import { AttackFlowNode, FlowEdge } from '../../types/attack-flow';
-import { getLayoutedElements } from '../utils/layoutUtils';
-import { NODE_TYPES, EDGE_STYLES } from '../constants';
 import { MarkerType } from 'reactflow';
+
+import { AttackFlowNode, FlowEdge } from '../../types/attack-flow';
+import { NODE_TYPES, EDGE_STYLES } from '../constants';
+import { getLayoutedElements } from '../utils/layoutUtils';
 
 export const useGraphLayout = (nodes: AttackFlowNode[], edges: FlowEdge[]) => {
   const reactFlowInstance = useReactFlow();

@@ -1,9 +1,10 @@
+import { toPng } from 'html-to-image';
 import { useCallback } from 'react';
 import { useReactFlow, Node, Edge } from 'reactflow';
-import { toPng } from 'html-to-image';
-import { ExportOptions } from '../types';
-import { AttackFlowNode, FlowEdge } from '../../types/attack-flow';
+
 import { STIXBundleExporter } from '../../../flow-export/services/stixBundleExporter';
+import { AttackFlowNode, FlowEdge } from '../../types/attack-flow';
+import { ExportOptions } from '../types';
 
 interface ExportData {
   nodes: AttackFlowNode[];
@@ -15,7 +16,7 @@ export const useExportFlow = (data: ExportData) => {
 
   const exportToPng = useCallback(async (filename: string = 'attack-flow') => {
     const element = document.querySelector('.react-flow') as HTMLElement;
-    if (!element) return;
+    if (!element) {return;}
 
     try {
       const dataUrl = await toPng(element, {
@@ -63,7 +64,7 @@ export const useExportFlow = (data: ExportData) => {
       x_flowviz_metadata: {
         viewport: getViewport(),
         exportedAt: new Date().toISOString(),
-        tool: 'FlowViz',
+        tool: 'ThreatFlow',
         version: '1.0.0'
       }
     };

@@ -1,6 +1,6 @@
+import { IMAGE_FILTER_CONFIG, MEDIA_TYPE_MAP } from '../config';
 import { IImageExtractor } from '../interfaces';
 import { ImageInfo } from '../types';
-import { IMAGE_FILTER_CONFIG, MEDIA_TYPE_MAP } from '../config';
 
 export class ImageExtractor implements IImageExtractor {
   extractImages(doc: Document, baseUrl?: string): ImageInfo[] {
@@ -21,11 +21,11 @@ export class ImageExtractor implements IImageExtractor {
 
   private processImageElement(img: HTMLImageElement, baseUrl?: string, index?: number): ImageInfo | null {
     const src = img.src || img.getAttribute('src');
-    if (!src) return null;
+    if (!src) {return null;}
     
     // Resolve relative URLs
     const fullSrc = this.resolveImageUrl(src, baseUrl);
-    if (!fullSrc) return null;
+    if (!fullSrc) {return null;}
     
     // Skip very small images (likely icons/decorations)
     if (this.isImageTooSmall(img)) {

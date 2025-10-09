@@ -1,0 +1,128 @@
+name: Quality Gates & Security
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  quality-check:
+    name: Code Quality & Security
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: TypeScript compilation check
+      run: npx tsc --noEmit
+      
+    - name: ESLint check
+      run: npm run lint
+      
+    - name: Prettier formatting check
+      run: npx prettier --check .
+      
+    - name: Security audit
+      run: npm audit --audit-level high --omit dev
+      continue-on-error: true
+      
+    - name: Build application
+      run: npm run build
+      
+    - name: Check bundle size
+      run: |
+        BUNDLE_SIZE=$(du -sh dist/ | cut -f1)
+        echo "Bundle size: $BUNDLE_SIZE"
+        # Add bundle size limits if needed
+        
+  dependency-check:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+        
+  secrets-scan:
+    name: Secrets Detection
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Run GitLeaks
+      uses: zricethezav/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+  performance-check:
+    name: Performance Budget
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build for production
+      run: npm run build
+      
+    - name: Analyze bundle size
+      run: |
+        echo "## Bundle Size Analysis" >> $GITHUB_STEP_SUMMARY
+        echo "| File | Size |" >> $GITHUB_STEP_SUMMARY
+        echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+        find dist -name "*.js" -o -name "*.css" | while read file; do
+          size=$(du -h "$file" | cut -f1)
+          echo "| $file | $size |" >> $GITHUB_STEP_SUMMARY
+        done
+        
+    - name: Check critical bundle size limits
+      run: |
+        # Fail if main bundle exceeds 500KB
+        MAIN_SIZE=$(find dist -name "index-*.js" -exec du -k {} \; | cut -f1)
+        if [ $MAIN_SIZE -gt 500 ]; then
+          echo "❌ Main bundle size ($MAIN_SIZE KB) exceeds 500KB limit"
+          exit 1
+        fi
+        echo "✅ Bundle size within limits ($MAIN_SIZE KB)"

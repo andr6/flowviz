@@ -1,15 +1,16 @@
-import React from 'react';
 import {
   Box,
   InputLabel,
 } from '@mui/material';
-import { SearchInputWithClear } from '../../../../shared/components/SearchInput';
+import React from 'react';
+
 import { 
   DropdownFormControl, 
   DropdownSelect, 
   DropdownMenuItem, 
   dropdownMenuStyles 
 } from '../../../../shared/components/Dropdown';
+import { SearchInputWithClear } from '../../../../shared/components/SearchInput';
 
 interface SearchAndFiltersProps {
   searchTerm: string;

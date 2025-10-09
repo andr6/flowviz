@@ -1,4 +1,5 @@
 import { Typography, Link, Tooltip } from '@mui/material';
+
 import { getTextStyle, getMitreLink, hasDescription, hasName, isAttackAction } from './nodeUtils';
 
 interface NodeContentProps {

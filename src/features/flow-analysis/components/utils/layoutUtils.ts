@@ -1,5 +1,6 @@
 import dagre from 'dagre';
 import { Node, Edge } from 'reactflow';
+
 import { LAYOUT_CONFIG } from '../constants';
 
 export const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {

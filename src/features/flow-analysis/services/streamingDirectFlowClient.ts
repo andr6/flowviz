@@ -1,12 +1,36 @@
-import { APIError } from './errors';
 import { Node, Edge } from 'reactflow';
+
+import { DEFAULT_AI_MODELS, NETWORK } from '../../../shared/constants/AppConstants';
+
+import { APIError } from './errors';
 
 export interface StreamingDirectFlowCallbacks {
   onNode: (node: Node) => void;
   onEdge: (edge: Edge) => void;
   onProgress?: (stage: string, message: string) => void;
+  onIOCAnalysis?: (iocAnalysis: any) => void;
   onComplete: () => void;
   onError: (error: Error) => void;
+}
+
+export interface ProviderSettings {
+  currentProvider: 'claude' | 'ollama' | 'openai' | 'openrouter';
+  claude: {
+    apiKey: string;
+    model: string;
+  };
+  ollama: {
+    baseUrl: string;
+    model: string;
+  };
+  openai: {
+    apiKey: string;
+    model: string;
+  };
+  openrouter: {
+    apiKey: string;
+    model: string;
+  };
 }
 
 export class StreamingDirectFlowClient {
@@ -17,28 +41,49 @@ export class StreamingDirectFlowClient {
   private emittedNodeIds = new Set<string>();
 
   async extractDirectFlowStreaming(
-    input: string, 
-    callbacks: StreamingDirectFlowCallbacks
+    input: string | File, 
+    callbacks: StreamingDirectFlowCallbacks,
+    providerSettings?: ProviderSettings
   ): Promise<void> {
     console.log('=== Starting Streaming Direct Flow Extraction ===');
     
     try {
-      // Determine if input is URL or text content
-      const isUrl = input.startsWith('http://') || input.startsWith('https://');
+      // Determine input type
+      const isUrl = typeof input === 'string' && (input.startsWith('http://') || input.startsWith('https://'));
+      const isPdf = input instanceof File && input.type === 'application/pdf';
       
-      const response = await fetch('/api/claude-stream', {
+      const requestBody: any = {
+        system: "You are an expert in cyber threat intelligence analysis.",
+        provider: providerSettings || {
+          currentProvider: 'claude',
+          claude: { apiKey: '', model: DEFAULT_AI_MODELS.claude },
+          ollama: { baseUrl: `http://localhost:${NETWORK.PORTS.DEVELOPMENT.OLLAMA}`, model: DEFAULT_AI_MODELS.ollama },
+          openai: { apiKey: '', model: DEFAULT_AI_MODELS.openai },
+          openrouter: { apiKey: '', model: 'anthropic/claude-3.5-sonnet' }
+        }
+      };
+
+      if (isUrl) {
+        requestBody.url = input;
+      } else if (isPdf) {
+        // Convert PDF to base64
+        const arrayBuffer = await (input as File).arrayBuffer();
+        const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+        requestBody.pdf = base64;
+      } else {
+        requestBody.text = input;
+      }
+      
+      const response = await fetch('/api/ai-stream', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...(isUrl ? { url: input } : { text: input }),
-          system: "You are an expert in cyber threat intelligence analysis.",
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
-        throw new APIError(`Failed to stream from Claude: ${response.statusText}`, response.status);
+        throw new APIError(`Failed to stream from AI provider: ${response.statusText}`, response.status);
       }
 
       const reader = response.body?.getReader();
@@ -53,7 +98,7 @@ export class StreamingDirectFlowClient {
 
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {break;}
 
         buffer += decoder.decode(value, { stream: true });
         
@@ -91,6 +136,12 @@ export class StreamingDirectFlowClient {
               if (event.type === 'progress') {
                 console.log(`📈 ${event.stage}: ${event.message}`);
                 callbacks.onProgress?.(event.stage, event.message);
+              }
+              
+              // Handle IOC analysis data from server
+              if (event.type === 'ioc_analysis' && event.data && callbacks.onIOCAnalysis) {
+                console.log(`🔍 IOC Analysis received: ${event.data.indicators?.length || 0} indicators`);
+                callbacks.onIOCAnalysis(event.data);
               }
               
               if (event.type === 'content_block_delta' && event.delta?.text) {
@@ -262,7 +313,28 @@ export class StreamingDirectFlowClient {
     try {
       // Clean the response text and parse the complete JSON
       const cleanedText = text.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
-      const json = JSON.parse(cleanedText);
+      
+      if (!cleanedText) {
+        console.warn('No text to parse for final JSON');
+        return;
+      }
+
+      let json;
+      try {
+        json = JSON.parse(cleanedText);
+      } catch (parseError) {
+        console.error('Failed to parse final response:', parseError);
+        console.log('Raw response text:', text);
+        console.log('Cleaned text:', cleanedText);
+        // Don't throw error, just return as streaming already completed successfully
+        return;
+      }
+      
+      // Process IOC/IOA analysis data if present
+      if (json.ioc_analysis && callbacks.onIOCAnalysis) {
+        console.log('🔍 Processing IOC/IOA analysis data...');
+        callbacks.onIOCAnalysis(json.ioc_analysis);
+      }
       
       // Only process any remaining nodes that weren't caught during streaming
       if (json.nodes && Array.isArray(json.nodes)) {

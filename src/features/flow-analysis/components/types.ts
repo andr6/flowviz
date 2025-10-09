@@ -1,4 +1,5 @@
 import { Node, Edge } from 'reactflow';
+
 import { AttackFlowNode, FlowEdge } from '../types/attack-flow';
 
 export interface FlowVisualizationProps {

@@ -1,5 +1,7 @@
-import { NodeFactory } from './nodes';
 import { NodeProps } from 'reactflow';
+
+import { NodeFactory } from './nodes';
+import SimplifiedNode from './nodes/SimplifiedNode';
 
 export type ValidNodeTypes = 
   | 'action'
@@ -22,6 +24,18 @@ export const NODE_TYPES: Record<ValidNodeTypes, React.ComponentType<NodeProps>> 
   'vulnerability': NodeFactory,
   'AND_operator': NodeFactory,
   'OR_operator': NodeFactory,
+};
+
+export const SIMPLIFIED_NODE_TYPES: Record<ValidNodeTypes, React.ComponentType<NodeProps>> = {
+  'action': SimplifiedNode,
+  'tool': SimplifiedNode,
+  'malware': SimplifiedNode,
+  'asset': SimplifiedNode,
+  'infrastructure': SimplifiedNode,
+  'url': SimplifiedNode,
+  'vulnerability': SimplifiedNode,
+  'AND_operator': SimplifiedNode,
+  'OR_operator': SimplifiedNode,
 };
 
 export const THEME = {

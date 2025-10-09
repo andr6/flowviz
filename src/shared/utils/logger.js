@@ -11,7 +11,7 @@ export const logger = winston.createLogger({
     winston.format.errors({ stack: true }),
     winston.format.json()
   ),
-  defaultMeta: { service: 'flowviz-backend' },
+  defaultMeta: { service: 'threatflow-backend' },
   transports: [
     // Console output with simple format for development
     new winston.transports.Console({

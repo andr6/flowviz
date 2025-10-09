@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { Node, Edge } from 'reactflow';
-import { AttackFlowNode, FlowEdge } from '../../types/attack-flow';
+
 import { FlowConverterRefactored } from '../../services';
 import { StreamingProgressUpdate, ExtractedAttackInfo } from '../../services/types';
 import { getLayoutedElements } from '../utils/layoutUtils';

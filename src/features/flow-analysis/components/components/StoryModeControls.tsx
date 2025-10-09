@@ -1,13 +1,3 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  IconButton,
-  Typography,
-  LinearProgress,
-  Paper,
-  Tooltip,
-  Collapse
-} from '@mui/material';
 import {
   PlayArrow,
   Pause,
@@ -18,6 +8,17 @@ import {
   ExpandLess,
   ExpandMore
 } from '@mui/icons-material';
+import {
+  Box,
+  IconButton,
+  Typography,
+  LinearProgress,
+  Paper,
+  Tooltip,
+  Collapse
+} from '@mui/material';
+import React, { useState, useEffect } from 'react';
+
 import { StoryModeState, StoryModeControls as StoryModeControlsType, StoryStep } from '../hooks/useStoryMode';
 
 interface StoryModeControlsProps {
@@ -65,7 +66,7 @@ const StoryModeControls: React.FC<StoryModeControlsProps> = ({
     action();
   };
 
-  if (steps.length === 0) return null;
+  if (steps.length === 0) {return null;}
 
   return (
     <Paper

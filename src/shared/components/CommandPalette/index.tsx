@@ -1,0 +1,1 @@
+export { CommandPalette, type CommandAction } from './CommandPalette';

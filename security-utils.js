@@ -47,7 +47,7 @@ export async function secureFetch(url, options = {}) {
   const timeout = setTimeout(() => controller.abort(), options.timeout || 30000);
   
   const defaultHeaders = {
-    'User-Agent': 'FlowViz/1.0 (+https://github.com/flowviz/flowviz)',
+    'User-Agent': 'ThreatFlow/1.0 (+https://github.com/threatflow/threatflow)',
     'Accept-Language': 'en-US,en;q=0.5',
     'Accept-Encoding': 'gzip, deflate, br',
     'DNT': '1',

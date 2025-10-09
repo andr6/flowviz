@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
 import { Box, Typography } from '@mui/material';
 import { keyframes } from '@mui/system';
+import React, { useState, useEffect } from 'react';
 
 const pulseAnimation = keyframes`
   0%, 100% {
@@ -91,7 +91,7 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
   const [loadingStateIndex, setLoadingStateIndex] = useState(0);
 
   useEffect(() => {
-    if (!isVisible) return;
+    if (!isVisible) {return;}
     
     const interval = setInterval(() => {
       setLoadingStateIndex((current) => 
@@ -109,7 +109,7 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
     }
   }, [isVisible]);
 
-  if (!isVisible) return null;
+  if (!isVisible) {return null;}
 
   return (
     <Box

@@ -1,4 +1,5 @@
-import React from 'react';
+import ClearIcon from '@mui/icons-material/Clear';
+import SearchIcon from '@mui/icons-material/Search';
 import {
   TextField,
   TextFieldProps,
@@ -7,102 +8,109 @@ import {
   styled,
   Box,
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import ClearIcon from '@mui/icons-material/Clear';
-import { flowVizTheme, createScrollbarStyle } from '../../theme/flowviz-theme';
+import React from 'react';
 
-// Base search input styling - fully monochrome using theme values
-const searchInputStyles = {
+import { createScrollbarStyle } from '../../theme/threatflow-theme';
+import { useThemeContext } from '../../context/ThemeProvider';
+
+// Theme-aware search input styling function
+const createSearchInputStyles = (theme: any) => ({
   '& .MuiOutlinedInput-root': {
-    color: flowVizTheme.colors.text.primary,
-    backgroundColor: flowVizTheme.colors.background.glass,
-    borderRadius: `${flowVizTheme.borderRadius.md}px`,
-    transition: flowVizTheme.motion.normal,
+    color: theme.colors.text.primary,
+    backgroundColor: theme.colors.background.glass,
+    borderRadius: `${theme.borderRadius.md}px`,
+    transition: theme.motion.normal,
     
     '&:hover': {
-      backgroundColor: flowVizTheme.colors.background.glassLight,
+      backgroundColor: theme.colors.background.glassLight,
     },
     
     '&.Mui-focused': {
-      backgroundColor: flowVizTheme.colors.background.glassLight,
+      backgroundColor: theme.colors.background.glassLight,
     },
     
-    // Autofill handling for monochrome consistency
+    // Autofill handling for theme consistency
     '& input:-webkit-autofill, & input:-webkit-autofill:hover, & input:-webkit-autofill:focus': {
-      WebkitTextFillColor: flowVizTheme.colors.text.primary,
-      WebkitBoxShadow: `0 0 0px 1000px ${flowVizTheme.colors.background.glass} inset`,
+      WebkitTextFillColor: `${theme.colors.text.primary} !important`,
+      WebkitBoxShadow: `0 0 0px 1000px ${theme.colors.background.glass} inset !important`,
       transition: 'background-color 5000s ease-in-out 0s',
       fontSize: 'inherit',
-      caretColor: flowVizTheme.colors.text.primary,
+      caretColor: `${theme.colors.text.primary} !important`,
     },
   },
   
   '& .MuiOutlinedInput-notchedOutline': {
-    borderColor: flowVizTheme.colors.surface.border.default,
+    borderColor: theme.colors.surface.border.default,
     borderWidth: 1,
-    transition: flowVizTheme.motion.fast,
+    transition: theme.motion.fast,
   },
   
   '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
-    borderColor: flowVizTheme.colors.surface.border.emphasis,
+    borderColor: theme.colors.surface.border.emphasis,
   },
   
-  // Monochrome focus - using theme value
+  // Theme-aware focus
   '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
-    borderColor: flowVizTheme.colors.surface.border.focus,
+    borderColor: theme.colors.surface.border.focus,
     borderWidth: 1,
   },
   
   // Error state - using theme colors
   '& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline': {
-    borderColor: flowVizTheme.colors.status.error.border,
+    borderColor: theme.colors.status.error.border,
   },
   
   '& .MuiInputLabel-root': {
-    color: flowVizTheme.colors.text.secondary,
+    color: theme.colors.text.secondary,
     
     '&.Mui-focused': {
-      color: flowVizTheme.colors.text.primary,
+      color: theme.colors.text.primary,
     },
     
     '&.Mui-error': {
-      color: flowVizTheme.colors.status.error.text,
+      color: theme.colors.status.error.text,
     },
   },
   
   '& input::placeholder, & textarea::placeholder': {
-    color: flowVizTheme.colors.text.tertiary,
+    color: theme.colors.text.tertiary,
     opacity: 1,
     letterSpacing: '0.01em',
   },
   
   '& .MuiFormHelperText-root': {
-    color: flowVizTheme.colors.text.tertiary,
+    color: theme.colors.text.tertiary,
     fontSize: '0.75rem',
-    marginTop: `${flowVizTheme.spacing.xs}px`,
+    marginTop: `${theme.spacing?.xs || 4}px`,
     
     '&.Mui-error': {
-      color: flowVizTheme.colors.status.error.text,
+      color: theme.colors.status.error.text,
     },
   },
-};
+});
 
 // Compact variant styling for dialogs and smaller spaces
-const compactSearchStyles = {
-  ...searchInputStyles,
-  '& .MuiOutlinedInput-root': {
-    ...searchInputStyles['& .MuiOutlinedInput-root'],
-    fontSize: '0.875rem',
-    '& input': {
-      padding: `${flowVizTheme.spacing.sm + 2}px ${flowVizTheme.spacing.sm + 6}px`,
+const createCompactSearchStyles = (theme: any) => {
+  const baseStyles = createSearchInputStyles(theme);
+  return {
+    ...baseStyles,
+    '& .MuiOutlinedInput-root': {
+      ...baseStyles['& .MuiOutlinedInput-root'],
+      fontSize: '0.875rem',
+      '& input': {
+        padding: `${(theme.spacing?.sm || 8) + 2}px ${(theme.spacing?.sm || 8) + 6}px`,
+      },
     },
-  },
+  };
 };
 
-// Standard search input
-export const SearchInput = styled(TextField)<TextFieldProps>({
-  ...searchInputStyles,
-});
+// Theme-aware search input component
+export const SearchInput: React.FC<TextFieldProps> = (props) => {
+  const { theme } = useThemeContext();
+  const searchStyles = createSearchInputStyles(theme);
+  
+  return <TextField {...props} sx={{ ...searchStyles, ...(props.sx as object || {}) }} />;
+};
 
 // Search input with integrated clear button
 interface SearchInputWithClearProps extends Omit<TextFieldProps, 'InputProps'> {
@@ -116,6 +124,7 @@ export const SearchInputWithClear: React.FC<SearchInputWithClearProps> = ({
   showSearchIcon = true,
   ...props
 }) => {
+  const { theme } = useThemeContext();
   const hasValue = Boolean(value);
   
   return (
@@ -125,7 +134,7 @@ export const SearchInputWithClear: React.FC<SearchInputWithClearProps> = ({
       InputProps={{
         startAdornment: showSearchIcon ? (
           <InputAdornment position="start">
-            <SearchIcon sx={{ color: flowVizTheme.colors.text.tertiary }} />
+            <SearchIcon sx={{ color: theme.colors.text.tertiary }} />
           </InputAdornment>
         ) : undefined,
         endAdornment: hasValue && onClear ? (
@@ -134,10 +143,10 @@ export const SearchInputWithClear: React.FC<SearchInputWithClearProps> = ({
               size="small"
               onClick={onClear}
               sx={{
-                color: flowVizTheme.colors.text.tertiary,
+                color: theme.colors.text.tertiary,
                 '&:hover': {
-                  color: flowVizTheme.colors.text.secondary,
-                  backgroundColor: flowVizTheme.colors.surface.hover,
+                  color: theme.colors.text.secondary,
+                  backgroundColor: theme.colors.surface.hover,
                 },
               }}
             >
@@ -151,29 +160,44 @@ export const SearchInputWithClear: React.FC<SearchInputWithClearProps> = ({
 };
 
 // Compact search input for dialogs
-export const SearchInputCompact = styled(TextField)<TextFieldProps>({
-  ...compactSearchStyles,
-});
+export const SearchInputCompact: React.FC<TextFieldProps> = (props) => {
+  const { theme } = useThemeContext();
+  const compactStyles = createCompactSearchStyles(theme);
+  
+  return <TextField {...props} sx={{ ...compactStyles, ...(props.sx as object || {}) }} />;
+};
 
 // URL input with larger height
-export const SearchInputURL = styled(TextField)<TextFieldProps>({
-  ...searchInputStyles,
-  '& .MuiOutlinedInput-root': {
-    ...searchInputStyles['& .MuiOutlinedInput-root'],
-    height: 56,
-  },
-});
+export const SearchInputURL: React.FC<TextFieldProps> = (props) => {
+  const { theme } = useThemeContext();
+  const baseStyles = createSearchInputStyles(theme);
+  const urlStyles = {
+    ...baseStyles,
+    '& .MuiOutlinedInput-root': {
+      ...baseStyles['& .MuiOutlinedInput-root'],
+      height: 56,
+    },
+  };
+  
+  return <TextField {...props} sx={{ ...urlStyles, ...(props.sx as object || {}) }} />;
+};
 
 // Multiline search input for text content
-export const SearchInputMultiline = styled(TextField)<TextFieldProps>({
-  ...searchInputStyles,
-  '& .MuiOutlinedInput-root': {
-    ...searchInputStyles['& .MuiOutlinedInput-root'],
-    '& textarea': {
-      ...createScrollbarStyle(`${flowVizTheme.spacing.sm}px`),
+export const SearchInputMultiline: React.FC<TextFieldProps> = (props) => {
+  const { theme } = useThemeContext();
+  const baseStyles = createSearchInputStyles(theme);
+  const multilineStyles = {
+    ...baseStyles,
+    '& .MuiOutlinedInput-root': {
+      ...baseStyles['& .MuiOutlinedInput-root'],
+      '& textarea': {
+        ...createScrollbarStyle(`${theme.spacing?.sm || 8}px`),
+      },
     },
-  },
-});
+  };
+  
+  return <TextField {...props} sx={{ ...multilineStyles, ...(props.sx as object || {}) }} />;
+};
 
 // Search input with status indicator (for validation states)
 interface SearchInputWithStatusProps extends Omit<TextFieldProps, 'error'> {
@@ -186,29 +210,31 @@ export const SearchInputWithStatus: React.FC<SearchInputWithStatusProps> = ({
   statusMessage,
   ...props
 }) => {
+  const { theme } = useThemeContext();
+  
   const getBorderColor = () => {
     switch (status) {
       case 'warning':
-        return flowVizTheme.colors.status.warning.border;
+        return theme.colors.status.warning.border;
       case 'error':
-        return flowVizTheme.colors.status.error.border;
+        return theme.colors.status.error.border;
       case 'success':
-        return flowVizTheme.colors.status.success.border;
+        return theme.colors.status.success.border;
       default:
-        return flowVizTheme.colors.surface.border.default;
+        return theme.colors.surface.border.default;
     }
   };
   
   const getTextColor = () => {
     switch (status) {
       case 'warning':
-        return flowVizTheme.colors.status.warning.text;
+        return theme.colors.status.warning.text;
       case 'error':
-        return flowVizTheme.colors.status.error.text;
+        return theme.colors.status.error.text;
       case 'success':
-        return flowVizTheme.colors.status.success.text;
+        return theme.colors.status.success.text;
       default:
-        return flowVizTheme.colors.text.tertiary;
+        return theme.colors.text.tertiary;
     }
   };
   
@@ -227,7 +253,7 @@ export const SearchInputWithStatus: React.FC<SearchInputWithStatusProps> = ({
       {statusMessage && (
         <Box
           sx={{
-            mt: flowVizTheme.spacing.xs / 8,
+            mt: (theme.spacing?.xs || 4) / 8,
             fontSize: '0.75rem',
             color: getTextColor(),
           }}

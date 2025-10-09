@@ -1,7 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
+
 import { AttackFlowNode, FlowEdge } from '../../types/attack-flow';
-import { ExtractedAttackInfo } from '../types';
 import { TACTIC_DEFINITIONS } from '../config';
+import { ExtractedAttackInfo } from '../types';
+
 import { INodeConverter } from './base/INodeConverter';
 
 export interface TacticResult {
@@ -51,7 +53,7 @@ export class ActionNodeConverter implements INodeConverter {
 
     for (const { key, prefix, tacticId } of tacticalOrder) {
       const actions = extractedInfo[key as keyof ExtractedAttackInfo] as any[];
-      if (!actions?.length) continue;
+      if (!actions?.length) {continue;}
 
       console.log(`=== Creating ${key} nodes ===`);
       console.log(`Processing ${actions.length} ${key} actions`);
@@ -126,7 +128,7 @@ export class ActionNodeConverter implements INodeConverter {
       const aActions = extractedInfo[a.key as keyof ExtractedAttackInfo] as any[];
       const bActions = extractedInfo[b.key as keyof ExtractedAttackInfo] as any[];
       
-      if (!aActions?.length || !bActions?.length) return 0;
+      if (!aActions?.length || !bActions?.length) {return 0;}
       
       // Check for temporal indicators
       const aHasEarly = aActions.some(action => 
@@ -143,8 +145,8 @@ export class ActionNodeConverter implements INodeConverter {
         action.description?.toLowerCase().includes('started')
       );
       
-      if (aHasEarly && !bHasEarly) return -1;
-      if (!aHasEarly && bHasEarly) return 1;
+      if (aHasEarly && !bHasEarly) {return -1;}
+      if (!aHasEarly && bHasEarly) {return 1;}
       
       // Fall back to standard MITRE ordering
       const aIndex = TACTIC_DEFINITIONS.findIndex(t => t.key === a.key);
@@ -238,11 +240,11 @@ export class ActionNodeConverter implements INodeConverter {
     nodes: AttackFlowNode[],
     edges: FlowEdge[]
   ): Promise<void> {
-    if (targetedAssets.length === 0) return;
+    if (targetedAssets.length === 0) {return;}
     
     targetedAssets.forEach(assetId => {
       const assetNode = nodes.find(node => node.id === assetId);
-      if (!assetNode) return;
+      if (!assetNode) {return;}
       
       edges.push({
         id: uuidv4(),

@@ -1,15 +1,15 @@
-import React from 'react';
+import {
+  Check as CheckIcon,
+  Close as CloseIcon,
+} from '@mui/icons-material';
 import {
   Dialog,
   DialogContent,
   DialogActions,
   Box,
 } from '@mui/material';
-import {
-  Check as CheckIcon,
-  Close as CloseIcon,
-} from '@mui/icons-material';
-import { FlowDialogTitle } from '../../../../shared/components/Typography';
+import React from 'react';
+
 import { 
   PrimaryButton,
   SecondaryButton 
@@ -17,6 +17,7 @@ import {
 import { 
   EnhancedTextField
 } from '../../../../shared/components/EnhancedForm';
+import { FlowDialogTitle } from '../../../../shared/components/Typography';
 
 interface EditFlowDialogProps {
   open: boolean;

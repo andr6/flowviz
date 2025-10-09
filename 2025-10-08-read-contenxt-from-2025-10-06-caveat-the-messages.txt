@@ -1,0 +1,25 @@
+
+ ▐▛███▜▌   Claude Code v2.0.9
+▝▜█████▛▘  Sonnet 4.5 · Claude Pro
+  ▘▘ ▝▝    /opt/experiments/threatviz
+══════════════════════════════════════ Conversation compacted · ctrl+o for history ═════════════════════════════════════
+  ⎿  Referenced file src/features/attack-simulation/services/integrations/SiemIntegrationService.ts
+  ⎿  Read ATTACK_SIMULATION_PHASE2_SUMMARY.md (569 lines)
+  ⎿  Read src/features/attack-simulation/components/index.ts (26 lines)
+  ⎿  Referenced file src/features/attack-simulation/components/SimulationAnalyticsDashboard.tsx
+  ⎿  Read src/features/attack-simulation/components/ControlCoverageVisualization.tsx (560 lines)
+  ⎿  Todo list read (7 items)
+  ⎿  Session limit reached ∙ resets 12pm
+     /upgrade to increase your usage limit.
+
+> /memory 
+  ⎿  Opened memory file at ~/.claude/CLAUDE.md
+
+     > To use a different editor, set the $EDITOR or $VISUAL environment variable.
+
+> /usage 
+  ⎿  Status dialog dismissed
+
+
+
+

@@ -1,0 +1,58 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# ========================================
+# PRE-COMMIT QUALITY GATES
+# ========================================
+
+echo "🔍 Running pre-commit quality checks..."
+
+# 1. TypeScript compilation check
+echo "📝 Checking TypeScript compilation..."
+npx tsc --noEmit
+if [ $? -ne 0 ]; then
+  echo "❌ TypeScript compilation failed"
+  exit 1
+fi
+
+# 2. ESLint check (with auto-fix for simple issues)
+echo "🔧 Running ESLint with auto-fix..."
+npx eslint . --fix --max-warnings 0
+if [ $? -ne 0 ]; then
+  echo "❌ ESLint checks failed"
+  echo "💡 Run 'npm run lint' to see detailed errors"
+  exit 1
+fi
+
+# 3. Prettier formatting check
+echo "✨ Checking code formatting..."
+npx prettier --check .
+if [ $? -ne 0 ]; then
+  echo "❌ Code formatting issues found"
+  echo "💡 Run 'npx prettier --write .' to fix formatting"
+  exit 1
+fi
+
+# 4. Security audit (fail on high severity)
+echo "🔒 Running security audit..."
+npm audit --audit-level high --omit dev
+if [ $? -ne 0 ]; then
+  echo "⚠️ High severity security vulnerabilities found"
+  echo "💡 Run 'npm audit fix' to resolve issues"
+  # Don't exit on audit failures in development
+fi
+
+# 5. Check for sensitive files
+echo "🕵️ Checking for sensitive files..."
+if [ -f ".env" ]; then
+  echo "⚠️ .env file detected - ensure it's in .gitignore"
+fi
+
+# Check for potential secrets in staged files
+git diff --cached --name-only | xargs grep -l "api[_-]key\|password\|secret\|token" 2>/dev/null
+if [ $? -eq 0 ]; then
+  echo "⚠️ Potential secrets detected in staged files"
+  echo "💡 Please review and remove sensitive data"
+fi
+
+echo "✅ All pre-commit checks passed!"

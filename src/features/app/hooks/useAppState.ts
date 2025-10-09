@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 // URL validation helper
 const isValidUrl = (urlString: string): boolean => {
-  if (!urlString || !urlString.trim()) return false;
+  if (!urlString || !urlString.trim()) {return false;}
   
   try {
     const url = new URL(urlString);
@@ -18,7 +18,9 @@ export const useAppState = () => {
   const [submittedUrl, setSubmittedUrl] = useState('');
   const [textContent, setTextContent] = useState('');
   const [submittedText, setSubmittedText] = useState('');
-  const [inputMode, setInputMode] = useState<'url' | 'text'>('url');
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [submittedPdf, setSubmittedPdf] = useState<File | null>(null);
+  const [inputMode, setInputMode] = useState<'url' | 'text' | 'pdf'>('url');
   
   // UI state
   const [showError, setShowError] = useState(false);
@@ -47,6 +49,8 @@ export const useAppState = () => {
   const [edgeStyle, setEdgeStyle] = useState('solid');
   const [edgeCurve, setEdgeCurve] = useState('smooth');
   const [storyModeSpeed, setStoryModeSpeed] = useState(3); // seconds, range 1-10
+  const [showConfidenceOverlay, setShowConfidenceOverlay] = useState(false);
+  const [showScreenshotControls, setShowScreenshotControls] = useState(false);
   
   // Initialize settings from localStorage after mount
   useEffect(() => {
@@ -73,6 +77,16 @@ export const useAppState = () => {
     const storedStorySpeed = localStorage.getItem('story_mode_speed');
     if (storedStorySpeed) {
       setStoryModeSpeed(parseInt(storedStorySpeed, 10));
+    }
+    
+    const storedConfidenceOverlay = localStorage.getItem('show_confidence_overlay');
+    if (storedConfidenceOverlay !== null) {
+      setShowConfidenceOverlay(storedConfidenceOverlay === 'true');
+    }
+    
+    const storedScreenshotControls = localStorage.getItem('show_screenshot_controls');
+    if (storedScreenshotControls !== null) {
+      setShowScreenshotControls(storedScreenshotControls === 'true');
     }
     
     setSettingsLoaded(true);
@@ -136,14 +150,17 @@ export const useAppState = () => {
     edgeStyle: string;
     edgeCurve: string;
     storyModeSpeed: number;
+    providerSettings?: any;
   }) => {
-    // Use provided settings or current state values
-    const settingsToSave = newSettings || {
-      cinematicMode,
-      edgeColor,
-      edgeStyle,
-      edgeCurve,
-      storyModeSpeed
+    // Use provided settings or current state values, with fallbacks for undefined fields
+    const settingsToSave = {
+      cinematicMode: newSettings?.cinematicMode ?? cinematicMode,
+      edgeColor: newSettings?.edgeColor ?? edgeColor,
+      edgeStyle: newSettings?.edgeStyle ?? edgeStyle,
+      edgeCurve: newSettings?.edgeCurve ?? edgeCurve,
+      storyModeSpeed: newSettings?.storyModeSpeed ?? storyModeSpeed,
+      showConfidenceOverlay: showConfidenceOverlay ?? false,
+      showScreenshotControls: showScreenshotControls ?? false
     };
     
     // Save to localStorage
@@ -152,17 +169,38 @@ export const useAppState = () => {
     localStorage.setItem('edge_style', settingsToSave.edgeStyle);
     localStorage.setItem('edge_curve', settingsToSave.edgeCurve);
     localStorage.setItem('story_mode_speed', settingsToSave.storyModeSpeed.toString());
+    localStorage.setItem('show_confidence_overlay', settingsToSave.showConfidenceOverlay.toString());
+    localStorage.setItem('show_screenshot_controls', settingsToSave.showScreenshotControls.toString());
     
     showToast('Settings saved successfully', 'success');
     setSettingsDialogOpen(false);
+  };
+
+  // Clear error state for recovery without losing user inputs
+  const clearErrorState = () => {
+    setShowError(false);
+    setArticleContent(null);
+    setExportFunction(null);
+    setStoryModeData(null);
+    // Keep user inputs (url, textContent) intact for retry
+    // Only clear submitted state to allow re-submission
+    setSubmittedUrl('');
+    setSubmittedText('');
+    setIsStreaming(false);
+    
+    if (clearVisualization) {
+      clearVisualization();
+    }
   };
 
   // Clear all form and content state
   const clearAllState = () => {
     setUrl('');
     setTextContent('');
+    setPdfFile(null);
     setSubmittedUrl('');
     setSubmittedText('');
+    setSubmittedPdf(null);
     setIsSearchExpanded(false);
     setArticleContent(null);
     setExportFunction(null);
@@ -184,6 +222,8 @@ export const useAppState = () => {
     submittedUrl,
     textContent,
     submittedText,
+    pdfFile,
+    submittedPdf,
     inputMode,
     showError,
     isSearchExpanded,
@@ -209,6 +249,8 @@ export const useAppState = () => {
     edgeStyle,
     edgeCurve,
     storyModeSpeed,
+    showConfidenceOverlay,
+    showScreenshotControls,
     
     // Flow management
     hasUnsavedChanges,
@@ -225,6 +267,8 @@ export const useAppState = () => {
     setSubmittedUrl,
     setTextContent,
     setSubmittedText,
+    setPdfFile,
+    setSubmittedPdf,
     setInputMode,
     setShowError,
     setIsSearchExpanded,
@@ -245,6 +289,8 @@ export const useAppState = () => {
     setEdgeStyle,
     setEdgeCurve,
     setStoryModeSpeed,
+    setShowConfidenceOverlay,
+    setShowScreenshotControls,
     setHasUnsavedChanges,
     setIsLoadedFlow,
     setIsStreaming,
@@ -257,5 +303,6 @@ export const useAppState = () => {
     showToast,
     handleSaveSettings,
     clearAllState,
+    clearErrorState,
   };
 };

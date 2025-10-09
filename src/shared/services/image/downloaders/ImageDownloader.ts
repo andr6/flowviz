@@ -1,7 +1,8 @@
 import axios from 'axios';
+
+import { IMAGE_DOWNLOAD_CONFIG } from '../config';
 import { IImageDownloader } from '../interfaces';
 import { ImageInfo } from '../types';
-import { IMAGE_DOWNLOAD_CONFIG } from '../config';
 
 export class ImageDownloader implements IImageDownloader {
   async downloadAsBase64(imageInfo: ImageInfo): Promise<string> {

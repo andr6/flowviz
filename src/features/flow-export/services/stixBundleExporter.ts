@@ -1,5 +1,5 @@
-import { v4 as uuidv4 } from 'uuid';
 import { Node, Edge } from 'reactflow';
+import { v4 as uuidv4 } from 'uuid';
 
 // STIX 2.1 Bundle types
 interface STIXBundle {
@@ -201,7 +201,7 @@ export class STIXBundleExporter {
    * Create kill chain phases for MITRE ATT&CK
    */
   private createKillChainPhases(data: any): any[] {
-    if (!data.tactic_name) return [];
+    if (!data.tactic_name) {return [];}
     
     return [{
       kill_chain_name: 'mitre-attack',
@@ -449,30 +449,30 @@ export class STIXBundleExporter {
     const lowerLabel = label.toLowerCase();
     
     // STIX 2.1 standard relationship types only
-    if (lowerLabel.includes('uses')) return 'uses';
-    if (lowerLabel.includes('targets')) return 'targets';
-    if (lowerLabel.includes('indicates')) return 'indicates';
-    if (lowerLabel.includes('mitigates')) return 'mitigates';
-    if (lowerLabel.includes('delivers')) return 'delivers';
-    if (lowerLabel.includes('hosts')) return 'hosts';
-    if (lowerLabel.includes('downloads')) return 'downloads';
-    if (lowerLabel.includes('drops')) return 'drops';
-    if (lowerLabel.includes('exploits')) return 'exploits';
-    if (lowerLabel.includes('variant')) return 'variant-of';
-    if (lowerLabel.includes('impersonates')) return 'impersonates';
-    if (lowerLabel.includes('communicates')) return 'communicates-with';
-    if (lowerLabel.includes('controls')) return 'controls';
-    if (lowerLabel.includes('owns')) return 'owns';
-    if (lowerLabel.includes('authored')) return 'authored-by';
-    if (lowerLabel.includes('located')) return 'located-at';
-    if (lowerLabel.includes('consists')) return 'consists-of';
-    if (lowerLabel.includes('uses')) return 'uses';
+    if (lowerLabel.includes('uses')) {return 'uses';}
+    if (lowerLabel.includes('targets')) {return 'targets';}
+    if (lowerLabel.includes('indicates')) {return 'indicates';}
+    if (lowerLabel.includes('mitigates')) {return 'mitigates';}
+    if (lowerLabel.includes('delivers')) {return 'delivers';}
+    if (lowerLabel.includes('hosts')) {return 'hosts';}
+    if (lowerLabel.includes('downloads')) {return 'downloads';}
+    if (lowerLabel.includes('drops')) {return 'drops';}
+    if (lowerLabel.includes('exploits')) {return 'exploits';}
+    if (lowerLabel.includes('variant')) {return 'variant-of';}
+    if (lowerLabel.includes('impersonates')) {return 'impersonates';}
+    if (lowerLabel.includes('communicates')) {return 'communicates-with';}
+    if (lowerLabel.includes('controls')) {return 'controls';}
+    if (lowerLabel.includes('owns')) {return 'owns';}
+    if (lowerLabel.includes('authored')) {return 'authored-by';}
+    if (lowerLabel.includes('located')) {return 'located-at';}
+    if (lowerLabel.includes('consists')) {return 'consists-of';}
+    if (lowerLabel.includes('uses')) {return 'uses';}
     
     // For attack flow sequences, use 'related-to' with description
-    if (lowerLabel.includes('followed by') || lowerLabel.includes('leads to')) return 'related-to';
-    if (lowerLabel.includes('enables')) return 'related-to';
-    if (lowerLabel.includes('requires')) return 'related-to';
-    if (lowerLabel.includes('affects')) return 'related-to';
+    if (lowerLabel.includes('followed by') || lowerLabel.includes('leads to')) {return 'related-to';}
+    if (lowerLabel.includes('enables')) {return 'related-to';}
+    if (lowerLabel.includes('requires')) {return 'related-to';}
+    if (lowerLabel.includes('affects')) {return 'related-to';}
     
     // Default
     return 'related-to';
