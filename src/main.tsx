@@ -5,20 +5,73 @@ import ReactDOM from 'react-dom/client';
 
 import App from './App';
 import ErrorBoundary from './shared/components/ErrorBoundary';
+import { DensityProvider } from './shared/context/DensityContext';
 import { ThemeProvider } from './shared/context/ThemeProvider';
 import { useThemeContext } from './shared/context/ThemeProvider';
 import './index.css';
 import './shared/styles/theme-transitions.css';
 import './shared/styles/force-light-theme.css';
 
+// React Query client with persistence and optimizations
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
+      // Cache data for 5 minutes
+      staleTime: 5 * 60 * 1000,
+      // Keep unused data in cache for 10 minutes
+      gcTime: 10 * 60 * 1000,
     },
   },
 });
+
+// Persist query cache to localStorage for offline support
+// This improves perceived performance on repeat visits
+if (typeof window !== 'undefined') {
+  const CACHE_KEY = 'threatflow:query-cache';
+
+  // Restore cache on load
+  const restoreCache = async () => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { timestamp, cache } = JSON.parse(cached);
+        // Only restore if cache is less than 1 hour old
+        if (Date.now() - timestamp < 60 * 60 * 1000) {
+          queryClient.setQueryData(['cached'], cache);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to restore query cache:', error);
+    }
+  };
+
+  // Persist cache periodically
+  const persistCache = () => {
+    try {
+      const cache = queryClient.getQueryCache().getAll();
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        timestamp: Date.now(),
+        cache: cache.slice(0, 50) // Limit to 50 most recent queries
+      }));
+    } catch (error) {
+      // Ignore quota exceeded errors
+    }
+  };
+
+  restoreCache();
+
+  // Persist on visibility change (when user leaves tab)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      persistCache();
+    }
+  });
+
+  // Persist before unload
+  window.addEventListener('beforeunload', persistCache);
+}
 
 // Material-UI theme factory that uses the custom theme
 const createMaterialUITheme = (customTheme: any, themeMode: 'light' | 'dark') => {
@@ -179,8 +232,12 @@ const createMaterialUITheme = (customTheme: any, themeMode: 'light' | 'dark') =>
 // App wrapper that consumes the theme context
 const AppWithTheme: React.FC = () => {
   const { theme, actualTheme } = useThemeContext();
-  const materialUITheme = createMaterialUITheme(theme, actualTheme);
 
+  // Memoize Material-UI theme creation to prevent recreation on every render
+  const materialUITheme = React.useMemo(
+    () => createMaterialUITheme(theme, actualTheme),
+    [theme, actualTheme]
+  );
 
   // Update body background color based on theme
   React.useEffect(() => {
@@ -201,9 +258,45 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <AppWithTheme />
+          <DensityProvider>
+            <AppWithTheme />
+          </DensityProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   </React.StrictMode>,
 );
+
+// Register service worker for offline support and caching
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .then((registration) => {
+        console.log('[Service Worker] Registered successfully:', registration.scope);
+
+        // Check for updates periodically
+        setInterval(() => {
+          registration.update();
+        }, 60 * 60 * 1000); // Check every hour
+
+        // Handle updates
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // New service worker available, notify user
+                console.log('[Service Worker] New version available');
+                // You can dispatch a custom event here to show a toast notification
+                window.dispatchEvent(new CustomEvent('sw-update-available'));
+              }
+            });
+          }
+        });
+      })
+      .catch((error) => {
+        console.error('[Service Worker] Registration failed:', error);
+      });
+  });
+}

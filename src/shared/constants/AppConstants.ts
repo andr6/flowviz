@@ -4,6 +4,17 @@ export const LIMITS = {
     MAX_CHARS: 650_000,
     WARNING_CHARS: 500_000,
     MAX_WORDS: Math.floor(650_000 / 5),
+    MAX_INPUT_LENGTH: 50_000, // 50k characters for text input
+  },
+  FILES: {
+    PDF: {
+      MAX_SIZE: 10 * 1024 * 1024,        // 10MB
+      MAX_PAGES: 100,
+      VALIDATION_TIMEOUT: 10_000,        // 10 seconds
+    },
+    IMAGE: {
+      MAX_SIZE: 3 * 1024 * 1024,         // 3MB
+    },
   },
   REQUEST: {
     MAX_SIZE: '10mb',
@@ -12,7 +23,7 @@ export const LIMITS = {
   },
   RATE: {
     ARTICLES: 10,        // per 15 minutes
-    IMAGES: 50,          // per 10 minutes  
+    IMAGES: 50,          // per 10 minutes
     STREAMING: 5,        // per 5 minutes
   },
   UI: {
@@ -22,15 +33,33 @@ export const LIMITS = {
       DURATION_LONG: 800,
     },
     DEBOUNCE: {
-      SEARCH: 300,
-      RESIZE: 100,
-      SCROLL: 50,
+      NAVIGATION: 150,   // Navigation debounce delay
+      INPUT: 300,        // Input field debounce
+      SEARCH: 300,       // Search debounce
+      RESIZE: 100,       // Window resize debounce
+      SCROLL: 50,        // Scroll debounce
     },
     LAYOUT: {
       APPBAR_HEIGHT: 76,
       SIDEBAR_WIDTH: 280,
       PANEL_MIN_WIDTH: 320,
     }
+  }
+} as const;
+
+export const TIMEOUTS = {
+  AI_STREAMING: {
+    DEFAULT: 60_000,      // 1 minute - standard AI response
+    EXTENDED: 120_000,    // 2 minutes - large documents/PDFs
+    MAX: 300_000,         // 5 minutes - absolute maximum
+  },
+  VALIDATION: {
+    PDF_PROCESSING: 10_000,  // 10 seconds for PDF validation
+    URL_FETCH: 30_000,       // 30 seconds for URL fetching
+  },
+  NETWORK: {
+    API_REQUEST: 30_000,     // 30 seconds for standard API requests
+    LONG_POLL: 120_000,      // 2 minutes for long-polling
   }
 } as const;
 

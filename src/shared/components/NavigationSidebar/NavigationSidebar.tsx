@@ -23,6 +23,23 @@ import {
   ExpandLess as ExpandLessIcon,
   ExpandMore as ExpandMoreIcon,
   Circle as CircleIcon,
+  AutoAwesome as AutoAwesomeIcon,
+  LibraryBooks as LibraryBooksIcon,
+  Integration as IntegrationInstructionsIcon,
+  Psychology as PsychologyIcon,
+  Warning as WarningIcon,
+  Recommend as RecommendIcon,
+  Business as BusinessIcon,
+  Domain as DomainIcon,
+  Payment as PaymentIcon,
+  Public as PublicIcon,
+  Share as ShareIcon,
+  Rss as RssIcon,
+  Extension as ExtensionIcon,
+  EmojiObjects as EmojiObjectsIcon,
+  Speed as SpeedIcon,
+  ModelTraining as ModelTrainingIcon,
+  Insights as InsightsIcon,
 } from '@mui/icons-material';
 import {
   Box,
@@ -85,7 +102,12 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   onSettings,
 }) => {
   const { theme } = useThemeContext();
-  const [expandedSections, setExpandedSections] = useState<string[]>(['analysis', 'tools']);
+  const [expandedSections, setExpandedSections] = useState<string[]>([
+    'quick-actions',
+    'analysis',
+    'playbook',
+    'ml-ai'
+  ]);
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections(prev => 
@@ -96,11 +118,19 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   };
 
   const navigationItems: NavigationItem[] = [
+    // Home / Dashboard
+    {
+      id: 'home',
+      label: 'Home',
+      icon: <HomeIcon />,
+      href: '/',
+    },
+
     // Quick Actions Section
     {
       id: 'quick-actions',
       label: 'Quick Actions',
-      icon: <DashboardIcon />,
+      icon: <SpeedIcon />,
       category: 'section',
       children: [
         {
@@ -132,11 +162,11 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
         },
       ],
     },
-    
+
     // Analysis Tools Section
     {
       id: 'analysis',
-      label: 'Analysis Tools',
+      label: 'Analysis & Detection',
       icon: <SecurityIcon />,
       category: 'section',
       children: [
@@ -167,70 +197,340 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
       ],
     },
 
-    // Intelligence Section
+    // Phase 1: Playbook & Automation
     {
-      id: 'intelligence',
-      label: 'Threat Intelligence',
-      icon: <AnalyticsIcon />,
+      id: 'playbook',
+      label: 'Playbook & Automation',
+      icon: <AutoAwesomeIcon />,
       category: 'section',
+      badge: 'Phase 1',
       children: [
         {
-          id: 'threat-feeds',
-          label: 'Threat Feeds',
-          icon: <TrendingUpIcon />,
-          href: '/threat-feeds',
+          id: 'playbook-generator',
+          label: 'Playbook Generator',
+          icon: <AutoAwesomeIcon />,
+          href: '/playbooks/new',
         },
         {
-          id: 'ioc-enrichment',
-          label: 'IOC Enrichment',
-          icon: <CloudUploadIcon />,
-          href: '/ioc-enrichment',
+          id: 'playbook-library',
+          label: 'Playbook Library',
+          icon: <LibraryBooksIcon />,
+          href: '/playbooks',
         },
         {
-          id: 'threat-hunting',
-          label: 'Threat Hunting',
-          icon: <SearchIcon />,
-          href: '/threat-hunting',
+          id: 'soar-integration',
+          label: 'SOAR Integration',
+          icon: <IntegrationInstructionsIcon />,
+          href: '/playbooks/soar',
         },
         {
-          id: 'investigation',
-          label: 'Investigation',
-          icon: <AssessmentIcon />,
-          href: '/investigation',
+          id: 'workflow-automation',
+          label: 'Workflow Automation',
+          icon: <ExtensionIcon />,
+          href: '/playbooks/workflows',
         },
       ],
     },
 
-    // Management Section
+    // Phase 2: IOC Enrichment
     {
-      id: 'management',
-      label: 'Management',
-      icon: <StorageIcon />,
+      id: 'enrichment',
+      label: 'IOC Enrichment',
+      icon: <CloudUploadIcon />,
       category: 'section',
+      badge: 'Phase 2',
       children: [
         {
-          id: 'case-management',
-          label: 'Case Management',
-          icon: <FolderOpenIcon />,
-          href: '/case-management',
+          id: 'enrichment-dashboard',
+          label: 'Enrichment Dashboard',
+          icon: <DashboardIcon />,
+          href: '/enrichment',
         },
+        {
+          id: 'provider-config',
+          label: 'Provider Configuration',
+          icon: <SettingsIcon />,
+          href: '/enrichment/providers',
+        },
+        {
+          id: 'enrichment-history',
+          label: 'Enrichment History',
+          icon: <HistoryIcon />,
+          href: '/enrichment/history',
+        },
+        {
+          id: 'provider-health',
+          label: 'Provider Health',
+          icon: <AnalyticsIcon />,
+          href: '/enrichment/health',
+        },
+      ],
+    },
+
+    // Phase 3: Alert & Incident Management
+    {
+      id: 'alerts',
+      label: 'Alert & Incident Mgmt',
+      icon: <WarningIcon />,
+      category: 'section',
+      badge: 'Phase 3',
+      children: [
         {
           id: 'alert-triage',
           label: 'Alert Triage',
           icon: <AssessmentIcon />,
-          href: '/alert-triage',
+          href: '/alerts/triage',
         },
+        {
+          id: 'siem-integration',
+          label: 'SIEM Integration',
+          icon: <IntegrationInstructionsIcon />,
+          href: '/alerts/siem',
+        },
+        {
+          id: 'alert-correlation',
+          label: 'Alert Correlation',
+          icon: <TimelineIcon />,
+          href: '/alerts/correlation',
+        },
+        {
+          id: 'incident-response',
+          label: 'Incident Response',
+          icon: <SecurityIcon />,
+          href: '/alerts/response',
+        },
+      ],
+    },
+
+    // Phase 4: SOC Operations
+    {
+      id: 'soc',
+      label: 'SOC Operations',
+      icon: <DashboardIcon />,
+      category: 'section',
+      badge: 'Phase 4',
+      children: [
         {
           id: 'soc-dashboard',
           label: 'SOC Dashboard',
           icon: <DashboardIcon />,
-          href: '/soc-dashboard',
+          href: '/soc',
         },
         {
-          id: 'reporting',
-          label: 'Reporting',
+          id: 'team-performance',
+          label: 'Team Performance',
+          icon: <PeopleIcon />,
+          href: '/soc/performance',
+        },
+        {
+          id: 'metrics-analytics',
+          label: 'Metrics & Analytics',
           icon: <AnalyticsIcon />,
-          href: '/reporting',
+          href: '/soc/metrics',
+        },
+        {
+          id: 'operational-reports',
+          label: 'Operational Reports',
+          icon: <AssessmentIcon />,
+          href: '/soc/reports',
+        },
+      ],
+    },
+
+    // Phase 5: Investigation & Cases
+    {
+      id: 'investigations',
+      label: 'Investigation & Cases',
+      icon: <SearchIcon />,
+      category: 'section',
+      badge: 'Phase 5',
+      children: [
+        {
+          id: 'investigation-workspace',
+          label: 'Investigation Workspace',
+          icon: <SearchIcon />,
+          href: '/investigations',
+        },
+        {
+          id: 'case-management',
+          label: 'Case Management',
+          icon: <FolderOpenIcon />,
+          href: '/cases',
+        },
+        {
+          id: 'evidence-management',
+          label: 'Evidence Management',
+          icon: <StorageIcon />,
+          href: '/evidence',
+        },
+        {
+          id: 'collaboration',
+          label: 'Collaboration',
+          icon: <PeopleIcon />,
+          href: '/collaboration',
+        },
+      ],
+    },
+
+    // Phase 6: Threat Intelligence
+    {
+      id: 'threat-intel',
+      label: 'Threat Intelligence',
+      icon: <PublicIcon />,
+      category: 'section',
+      badge: 'Phase 6',
+      children: [
+        {
+          id: 'stix-taxii',
+          label: 'STIX/TAXII Management',
+          icon: <IntegrationInstructionsIcon />,
+          href: '/intel/stix-taxii',
+        },
+        {
+          id: 'misp-integration',
+          label: 'MISP Integration',
+          icon: <ShareIcon />,
+          href: '/intel/misp',
+        },
+        {
+          id: 'feed-management',
+          label: 'Feed Management',
+          icon: <RssIcon />,
+          href: '/intel/feeds',
+        },
+        {
+          id: 'community-platform',
+          label: 'Community Platform',
+          icon: <PublicIcon />,
+          href: '/intel/community',
+        },
+      ],
+    },
+
+    // Phase 8: ML & AI
+    {
+      id: 'ml-ai',
+      label: 'ML & AI',
+      icon: <PsychologyIcon />,
+      category: 'section',
+      badge: 'NEW',
+      children: [
+        {
+          id: 'anomaly-detection',
+          label: 'Anomaly Detection',
+          icon: <WarningIcon />,
+          href: '/ml/anomalies',
+        },
+        {
+          id: 'threat-predictions',
+          label: 'Threat Predictions',
+          icon: <TrendingUpIcon />,
+          href: '/ml/predictions',
+        },
+        {
+          id: 'ioc-extraction',
+          label: 'IOC Extraction',
+          icon: <ExtensionIcon />,
+          href: '/ml/extraction',
+        },
+        {
+          id: 'recommendations',
+          label: 'Recommendations',
+          icon: <RecommendIcon />,
+          href: '/ml/recommendations',
+        },
+        {
+          id: 'pattern-recognition',
+          label: 'Pattern Recognition',
+          icon: <InsightsIcon />,
+          href: '/ml/patterns',
+        },
+        {
+          id: 'model-management',
+          label: 'Model Management',
+          icon: <ModelTrainingIcon />,
+          href: '/ml/models',
+        },
+      ],
+    },
+
+    // Phase 7: Enterprise
+    {
+      id: 'enterprise',
+      label: 'Enterprise',
+      icon: <BusinessIcon />,
+      category: 'section',
+      badge: 'Phase 7',
+      children: [
+        {
+          id: 'organization',
+          label: 'Organization',
+          icon: <DomainIcon />,
+          href: '/enterprise/organization',
+        },
+        {
+          id: 'users-roles',
+          label: 'Users & Roles',
+          icon: <PeopleIcon />,
+          href: '/enterprise/users',
+        },
+        {
+          id: 'subscriptions',
+          label: 'Subscriptions',
+          icon: <PaymentIcon />,
+          href: '/enterprise/subscriptions',
+        },
+        {
+          id: 'usage-quotas',
+          label: 'Usage & Quotas',
+          icon: <AnalyticsIcon />,
+          href: '/enterprise/quotas',
+        },
+        {
+          id: 'audit-logs',
+          label: 'Audit Logs',
+          icon: <HistoryIcon />,
+          href: '/enterprise/audit',
+        },
+        {
+          id: 'compliance-reports',
+          label: 'Compliance Reports',
+          icon: <AssessmentIcon />,
+          href: '/enterprise/compliance',
+        },
+      ],
+    },
+
+    // Defense & Security Section
+    {
+      id: 'defense',
+      label: 'Defense & Security',
+      icon: <ShieldIcon />,
+      category: 'section',
+      children: [
+        {
+          id: 'd3fend-mapping',
+          label: 'D3FEND Mapping',
+          icon: <ShieldIcon />,
+          href: '/d3fend-mapping',
+        },
+        {
+          id: 'attack-simulation',
+          label: 'Attack Simulation',
+          icon: <SecurityIcon />,
+          href: '/attack-simulation',
+        },
+        {
+          id: 'purple-team',
+          label: 'Purple Teaming',
+          icon: <PeopleIcon />,
+          href: '/purple-team',
+        },
+        {
+          id: 'executive-reporting',
+          label: 'Executive Reports',
+          icon: <AnalyticsIcon />,
+          href: '/executive-reporting',
         },
       ],
     },

@@ -198,8 +198,9 @@ export default function SettingsDialog({
     try {
       const config = localProviderSettings[provider];
       const endpoint = provider === 'picus' ? '/api/test-picus' : '/api/test-provider';
-      
-      const response = await fetch(`http://localhost:3001${endpoint}`, {
+
+      // Use relative URL to go through Vite proxy and avoid CORS issues
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

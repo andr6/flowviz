@@ -14,7 +14,7 @@ import {
   InputAdornment,
   Divider,
 } from '@mui/material';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
 import { useThemeContext } from '../../context/ThemeProvider';
 import { useResponsive } from '../../hooks/useResponsive';
@@ -37,7 +37,103 @@ interface CommandPaletteProps {
   commands: CommandAction[];
 }
 
-export const CommandPalette: React.FC<CommandPaletteProps> = ({
+// Memoized command list item component for better performance
+const CommandListItem = React.memo<{
+  command: CommandAction;
+  isSelected: boolean;
+  theme: any;
+  onSelect: () => void;
+  getCategoryColor: (category: string) => string;
+}>(({ command, isSelected, theme, onSelect, getCategoryColor }) => (
+  <ListItem
+    button
+    selected={isSelected}
+    onClick={onSelect}
+    disabled={command.disabled}
+    sx={{
+      borderRadius: theme.borderRadius.md,
+      mx: 1,
+      mb: 0.5,
+      transition: theme.effects.transitions.fast,
+      backgroundColor: isSelected
+        ? `${theme.colors.brand.primary}15`
+        : 'transparent',
+      border: `1px solid ${
+        isSelected
+          ? theme.colors.brand.primary
+          : 'transparent'
+      }`,
+      '&:hover': {
+        backgroundColor: !command.disabled
+          ? `${theme.colors.brand.primary}10`
+          : 'transparent',
+        borderColor: !command.disabled
+          ? theme.colors.brand.primary
+          : 'transparent',
+      },
+      opacity: command.disabled ? 0.5 : 1,
+      cursor: command.disabled ? 'not-allowed' : 'pointer',
+    }}
+  >
+    <ListItemIcon
+      sx={{
+        color: isSelected
+          ? theme.colors.brand.primary
+          : theme.colors.text.secondary,
+        minWidth: 40,
+      }}
+    >
+      {command.icon}
+    </ListItemIcon>
+    <ListItemText
+      primary={
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography
+            sx={{
+              color: theme.colors.text.primary,
+              fontSize: theme.typography.fontSize.sm,
+              fontWeight: theme.typography.fontWeight.medium,
+              fontFamily: theme.typography.fontFamily.primary,
+            }}
+          >
+            {command.label}
+          </Typography>
+          {command.badge && (
+            <Chip
+              label={command.badge}
+              size="small"
+              sx={{
+                height: 18,
+                fontSize: theme.typography.fontSize.xs,
+                backgroundColor: `${getCategoryColor(command.category)}20`,
+                color: getCategoryColor(command.category),
+                border: `1px solid ${getCategoryColor(command.category)}40`,
+              }}
+            />
+          )}
+        </Box>
+      }
+      secondary={
+        command.description && (
+          <Typography
+            sx={{
+              color: theme.colors.text.tertiary,
+              fontSize: theme.typography.fontSize.xs,
+              fontFamily: theme.typography.fontFamily.primary,
+              mt: 0.5,
+            }}
+          >
+            {command.description}
+          </Typography>
+        )
+      }
+    />
+  </ListItem>
+));
+
+CommandListItem.displayName = 'CommandListItem';
+
+export const CommandPalette: React.FC<CommandPaletteProps> = React.memo(({
   open,
   onClose,
   commands,
@@ -115,7 +211,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [open, filteredCommands, selectedIndex, onClose]);
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryColor = useCallback((category: string) => {
     switch (category) {
       case 'navigation': return theme.colors.brand.primary;
       case 'analysis': return theme.colors.status.success.accent;
@@ -124,7 +220,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       case 'theme': return theme.colors.status.info.accent;
       default: return theme.colors.text.secondary;
     }
-  };
+  }, [theme]);
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -259,92 +355,24 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
                 {/* Category Commands */}
                 <List sx={{ py: 0 }}>
-                  {categoryCommands.map((command, index) => {
+                  {categoryCommands.map((command) => {
                     const globalIndex = filteredCommands.findIndex(cmd => cmd.id === command.id);
                     const isSelected = globalIndex === selectedIndex;
-                    
+
                     return (
-                      <ListItem
+                      <CommandListItem
                         key={command.id}
-                        button
-                        selected={isSelected}
-                        onClick={() => {
+                        command={command}
+                        isSelected={isSelected}
+                        theme={theme}
+                        onSelect={() => {
                           if (!command.disabled) {
                             command.action();
                             onClose();
                           }
                         }}
-                        disabled={command.disabled}
-                        sx={{
-                          borderRadius: theme.borderRadius.md,
-                          mx: 1,
-                          mb: 0.5,
-                          backgroundColor: isSelected ? theme.colors.surface.hover : 'transparent',
-                          border: isSelected 
-                            ? `1px solid ${theme.colors.brand.primary}40` 
-                            : '1px solid transparent',
-                          '&:hover': {
-                            backgroundColor: theme.colors.surface.hover,
-                            border: `1px solid ${theme.colors.surface.border.default}`,
-                          },
-                          '&.Mui-disabled': {
-                            opacity: 0.5,
-                          },
-                          transition: theme.motion.fast,
-                        }}
-                      >
-                        <ListItemIcon
-                          sx={{
-                            color: isSelected 
-                              ? theme.colors.brand.primary 
-                              : getCategoryColor(command.category),
-                            minWidth: 40,
-                          }}
-                        >
-                          {command.icon}
-                        </ListItemIcon>
-                        
-                        <ListItemText
-                          primary={
-                            <Typography
-                              sx={{
-                                color: theme.colors.text.primary,
-                                fontSize: theme.typography.fontSize.base,
-                                fontWeight: theme.typography.fontWeight.medium,
-                                fontFamily: theme.typography.fontFamily.primary,
-                              }}
-                            >
-                              {command.label}
-                            </Typography>
-                          }
-                          secondary={command.description && (
-                            <Typography
-                              sx={{
-                                color: theme.colors.text.tertiary,
-                                fontSize: theme.typography.fontSize.sm,
-                                fontFamily: theme.typography.fontFamily.primary,
-                                mt: 0.5,
-                              }}
-                            >
-                              {command.description}
-                            </Typography>
-                          )}
-                        />
-                        
-                        {command.badge && (
-                          <Chip
-                            label={command.badge}
-                            size="small"
-                            sx={{
-                              height: 20,
-                              fontSize: theme.typography.fontSize.xs,
-                              backgroundColor: `${getCategoryColor(command.category)}20`,
-                              color: getCategoryColor(command.category),
-                              border: `1px solid ${getCategoryColor(command.category)}40`,
-                            }}
-                          />
-                        )}
-                      </ListItem>
+                        getCategoryColor={getCategoryColor}
+                      />
                     );
                   })}
                 </List>
@@ -439,4 +467,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       </Box>
     </Dialog>
   );
-};
+});
+
+CommandPalette.displayName = 'CommandPalette';

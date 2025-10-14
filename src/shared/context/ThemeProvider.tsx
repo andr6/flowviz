@@ -17,28 +17,36 @@ interface ThemeProviderProps {
   children: ReactNode;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+export const ThemeProvider: React.FC<ThemeProviderProps> = React.memo(({ children }) => {
   const { themeMode, actualTheme, setThemeMode, toggleTheme } = useTheme();
-  const themeVariants = createThemeVariants();
+
+  // Memoize theme variants creation
+  const themeVariants = React.useMemo(() => createThemeVariants(), []);
   const theme = themeVariants[actualTheme];
-  
+
   // Update HTML data-theme attribute when theme changes
   React.useEffect(() => {
     document.documentElement.setAttribute('data-theme', actualTheme);
   }, [actualTheme]);
 
-  return (
-    <ThemeContext.Provider value={{
+  // Memoize context value
+  const contextValue = React.useMemo(
+    () => ({
       theme,
       themeMode,
       actualTheme,
       setThemeMode,
       toggleTheme,
-    }}>
+    }),
+    [theme, themeMode, actualTheme, setThemeMode, toggleTheme]
+  );
+
+  return (
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );
-};
+});
 
 export const useThemeContext = (): ThemeContextType => {
   const context = useContext(ThemeContext);

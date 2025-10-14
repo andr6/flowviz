@@ -33,6 +33,7 @@ import { iocEnrichmentService } from './src/features/ioc-enrichment/services/IOC
 import { threatIntelligenceService } from './src/features/threat-intelligence/services/ThreatIntelligenceService.ts';
 import { picusSecurityService } from './src/integrations/picus/services/PicusSecurityService.ts';
 import { siemIntegrationService } from './src/integrations/siem/SIEMIntegrationService.ts';
+import { setupPlaybookRoutes } from './src/features/playbook-generation/api/playbookRoutes.ts';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -211,9 +212,18 @@ app.get('/api/health', async (_req, res) => {
 
 // Enterprise API routes
 app.use('/api/auth', authRoutes);
-app.use('/api/investigations', investigationRoutes);  
+app.use('/api/investigations', investigationRoutes);
 app.use('/api/siem', siemRoutes);
 app.use('/api/picus', picusRoutes);
+
+// Playbook generation routes
+// Note: Some endpoints require database, but SOAR platforms listing works without DB
+try {
+  setupPlaybookRoutes(app, databaseService.pool);
+  console.log('✅ Playbook generation routes initialized');
+} catch (error) {
+  console.error('❌ Failed to initialize playbook routes:', error);
+}
 
 // Test AI provider connection endpoint
 app.post('/api/test-provider', async (req, res) => {

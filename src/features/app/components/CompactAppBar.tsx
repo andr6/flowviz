@@ -25,6 +25,7 @@ import React, { useState } from 'react';
 
 import { GlassIconButton } from '../../../shared/components/Button';
 import { ThemeToggle } from '../../../shared/components/ThemeToggle';
+import { DensityToggle } from '../../../shared/components/DensityToggle';
 import { useThemeContext } from '../../../shared/context/ThemeProvider';
 
 // Professional streaming animation
@@ -300,6 +301,9 @@ export const CompactAppBar: React.FC<CompactAppBarProps> = ({
               </Badge>
             </GlassIconButton>
           </Tooltip>
+
+          {/* Density Toggle */}
+          <DensityToggle />
 
           {/* Theme Toggle */}
           <ThemeToggle />

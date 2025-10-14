@@ -1,8 +1,11 @@
-import { Box, Snackbar, Alert, Typography } from '@mui/material';
+import { Box, Snackbar, Alert, Typography, CircularProgress } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useState, useCallback, useRef } from 'react';
 
-import { AppBar, SearchForm, NewSearchDialog, SettingsDialog } from './features/app/components';
+import { AppBar, SearchForm } from './features/app/components';
+// Lazy load dialogs to reduce initial bundle size
+const NewSearchDialog = React.lazy(() => import('./features/app/components/NewSearchDialog'));
+const SettingsDialog = React.lazy(() => import('./features/app/components/SettingsDialog'));
 import { CompactAppBar } from './features/app/components/CompactAppBar';
 import { useAppState } from './features/app/hooks';
 import { AuthGuard } from './features/auth/components/AuthGuard';
@@ -12,6 +15,7 @@ import { SavedFlow } from './features/flow-storage/types/SavedFlow';
 import { FlowAlert } from './shared/components/Alert';
 import { GlassIconButton } from './shared/components/Button';
 import { ContentArea } from './shared/components/ContentArea';
+import { LazyLoadErrorBoundary } from './shared/components/ErrorBoundary';
 import { NavigationSidebar } from './shared/components/NavigationSidebar';
 import { LIMITS } from './shared/constants/AppConstants';
 import { useThemeContext } from './shared/context/ThemeProvider';
@@ -19,6 +23,23 @@ import { useProviderSettings } from './shared/hooks/useProviderSettings';
 // Lazy load the heavy flow visualization component
 const StreamingFlowVisualization = React.lazy(() => import('./features/flow-analysis/components/StreamingFlowVisualization'));
 import StreamingProgressBar from './shared/components/StreamingProgressBar';
+
+// Lazy load feature pages
+const FeatureHubDashboard = React.lazy(() => import('./features/dashboard/components/FeatureHubDashboard'));
+const D3FENDMappingPage = React.lazy(() => import('./features/d3fend-mapping/components/D3FENDMappingPage'));
+const AttackSimulationPage = React.lazy(() => import('./features/attack-simulation/components/AttackSimulationPage'));
+const PurpleTeamPage = React.lazy(() => import('./features/purple-team/components/PurpleTeamPage'));
+const ExecutiveReportingPage = React.lazy(() => import('./features/executive-reporting/components/ExecutiveReportingPage'));
+
+// Phase 1-8 Feature Pages
+const PlaybookDashboard = React.lazy(() => import('./features/playbook-generation/components/PlaybookGeneratorWizard'));
+const EnrichmentDashboard = React.lazy(() => import('./features/ioc-enrichment/components/IOCEnrichmentDashboard'));
+const AlertTriageDashboard = React.lazy(() => import('./features/alert-triage/components/AlertTriageDashboard'));
+const SOCDashboard = React.lazy(() => import('./features/soc-dashboard/components/SOCDashboard'));
+const InvestigationWorkspace = React.lazy(() => import('./features/investigation/components/InvestigationWorkspace'));
+const ThreatIntelDashboard = React.lazy(() => import('./features/threat-intelligence/components/ThreatIntelligenceDashboard'));
+const EnterprisePlaceholder = React.lazy(() => import('./features/enterprise/components/EnterprisePlaceholder'));
+const MLAIPlaceholder = React.lazy(() => import('./features/ml-ai/components/MLAIPlaceholder'));
 
 import WarningIcon from '@mui/icons-material/Warning';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
@@ -75,16 +96,110 @@ function ThreatFlowApp() {
     setNewSearchDialogOpen(true);
   };
 
+  // Navigation handler with debouncing to prevent rapid state changes
+  const navigationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleNavigate = useCallback((item: { href?: string }) => {
+    // Clear any pending navigation
+    if (navigationTimeoutRef.current) {
+      clearTimeout(navigationTimeoutRef.current);
+    }
+
+    // Debounce navigation to prevent rapid clicking from causing multiple state updates
+    navigationTimeoutRef.current = setTimeout(() => {
+      const page = item.href || '/';
+      const pageMap: Record<string, typeof currentPage> = {
+        '/': 'feature-hub',
+        '/home': 'home',
+        // Defense & Security
+        '/d3fend-mapping': 'd3fend-mapping',
+        '/attack-simulation': 'attack-simulation',
+        '/purple-team': 'purple-team',
+        '/executive-reporting': 'executive-reporting',
+        // Phase 1: Playbooks
+        '/playbooks': 'playbooks',
+        '/playbooks/new': 'playbooks',
+        '/playbooks/soar': 'playbooks',
+        '/playbooks/workflows': 'playbooks',
+        // Phase 2: Enrichment
+        '/enrichment': 'enrichment',
+        '/enrichment/providers': 'enrichment',
+        '/enrichment/history': 'enrichment',
+        '/enrichment/health': 'enrichment',
+        // Phase 3: Alerts
+        '/alerts/triage': 'alerts',
+        '/alerts/siem': 'alerts',
+        '/alerts/correlation': 'alerts',
+        '/alerts/response': 'alerts',
+        // Phase 4: SOC
+        '/soc': 'soc',
+        '/soc/performance': 'soc',
+        '/soc/metrics': 'soc',
+        '/soc/reports': 'soc',
+        // Phase 5: Investigations
+        '/investigations': 'investigations',
+        '/cases': 'investigations',
+        '/evidence': 'investigations',
+        '/collaboration': 'investigations',
+        // Phase 6: Intelligence
+        '/intel/stix-taxii': 'intel',
+        '/intel/misp': 'intel',
+        '/intel/feeds': 'intel',
+        '/intel/community': 'intel',
+        // Phase 7: Enterprise
+        '/enterprise/organization': 'enterprise',
+        '/enterprise/users': 'enterprise',
+        '/enterprise/subscriptions': 'enterprise',
+        '/enterprise/quotas': 'enterprise',
+        '/enterprise/audit': 'enterprise',
+        '/enterprise/compliance': 'enterprise',
+        // Phase 8: ML/AI
+        '/ml/anomalies': 'ml',
+        '/ml/predictions': 'ml',
+        '/ml/extraction': 'ml',
+        '/ml/recommendations': 'ml',
+        '/ml/patterns': 'ml',
+        '/ml/models': 'ml',
+      };
+      const mappedPage = pageMap[page] || 'feature-hub';
+      setCurrentPage(mappedPage);
+
+      // Clear analysis state when navigating away from home
+      if (mappedPage !== 'home' && mappedPage !== 'feature-hub') {
+        // Don't clear if user has active analysis
+        if (!articleContent) {
+          clearAllState();
+        }
+      }
+    }, LIMITS.UI.DEBOUNCE.NAVIGATION); // Debounce navigation to prevent rapid state changes
+  }, [articleContent, clearAllState]);
+
+  // Cleanup navigation timeout on unmount to prevent memory leaks
+  React.useEffect(() => {
+    return () => {
+      if (navigationTimeoutRef.current) {
+        clearTimeout(navigationTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Provider settings are now managed by the useProviderSettings custom hook
 
   // UI Control States
   const [showConfidenceOverlay, setShowConfidenceOverlay] = useState(false);
   const [showScreenshotControls, setShowScreenshotControls] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  
+
   // Advanced Visualization States
   const [enableAdvancedVisualization, setEnableAdvancedVisualization] = useState(true);
   const [showVisualizationFilters, setShowVisualizationFilters] = useState(false);
+
+  // Navigation State
+  const [currentPage, setCurrentPage] = useState<
+    'home' | 'feature-hub' |
+    'd3fend-mapping' | 'attack-simulation' | 'purple-team' | 'executive-reporting' |
+    'playbooks' | 'enrichment' | 'alerts' | 'soc' | 'investigations' | 'intel' | 'enterprise' | 'ml'
+  >('feature-hub');
 
   const {
     // Core state
@@ -787,6 +902,23 @@ function ThreatFlowApp() {
     return 'idle';
   };
 
+  // Shared page loader component with consistent styling
+  const PageLoader = React.useMemo(() => (
+    <Box sx={{
+      py: 4,
+      height: '60vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}>
+      <CircularProgress size={48} sx={{ color: theme.colors.brand.primary }} />
+      <Typography sx={{ mt: 2, color: theme.colors.text.secondary, fontSize: theme.typography.fontSize.sm }}>
+        Loading module...
+      </Typography>
+    </Box>
+  ), [theme]);
+
   return (
     <Box sx={{ 
       display: 'flex',
@@ -858,7 +990,7 @@ function ThreatFlowApp() {
         sidebar={
           <NavigationSidebar
             collapsed={sidebarCollapsed}
-            currentPath="/"
+            currentPath={currentPage === 'home' ? '/' : `/${currentPage}`}
             hasActiveAnalysis={Boolean(articleContent)}
             recentFlowsCount={recentFlows.recentFlows.length}
             savedFlowsCount={0} // TODO: Implement saved flows count
@@ -867,6 +999,7 @@ function ThreatFlowApp() {
             onLoadAnalysis={() => setLoadFlowDialogOpen(true)}
             onExportAnalysis={() => exportFunction && exportFunction('json')}
             onSettings={() => setSettingsDialogOpen(true)}
+            onNavigate={handleNavigate}
           />
         }
         header={
@@ -895,8 +1028,46 @@ function ThreatFlowApp() {
       >
 
 
-      {/* Show main form when no content is submitted */}
-      {!submittedUrl && !submittedText && !submittedPdf && (
+      {/* Feature Pages - Single Suspense boundary for all routes */}
+      <LazyLoadErrorBoundary componentName="Feature Page">
+        <Suspense fallback={PageLoader}>
+          {/* Feature Hub Dashboard */}
+          {currentPage === 'feature-hub' && <FeatureHubDashboard />}
+
+          {/* Defense & Security */}
+          {currentPage === 'd3fend-mapping' && <D3FENDMappingPage />}
+          {currentPage === 'attack-simulation' && <AttackSimulationPage />}
+          {currentPage === 'purple-team' && <PurpleTeamPage />}
+          {currentPage === 'executive-reporting' && <ExecutiveReportingPage />}
+
+          {/* Phase 1: Playbooks */}
+          {currentPage === 'playbooks' && <PlaybookDashboard />}
+
+          {/* Phase 2: Enrichment */}
+          {currentPage === 'enrichment' && <EnrichmentDashboard />}
+
+          {/* Phase 3: Alerts */}
+          {currentPage === 'alerts' && <AlertTriageDashboard />}
+
+          {/* Phase 4: SOC */}
+          {currentPage === 'soc' && <SOCDashboard />}
+
+          {/* Phase 5: Investigations */}
+          {currentPage === 'investigations' && <InvestigationWorkspace />}
+
+          {/* Phase 6: Intelligence */}
+          {currentPage === 'intel' && <ThreatIntelDashboard />}
+
+          {/* Phase 7: Enterprise */}
+          {currentPage === 'enterprise' && <EnterprisePlaceholder />}
+
+          {/* Phase 8: ML & AI */}
+          {currentPage === 'ml' && <MLAIPlaceholder />}
+        </Suspense>
+      </LazyLoadErrorBoundary>
+
+      {/* Show main form when on home page and no content is submitted */}
+      {currentPage === 'home' && !submittedUrl && !submittedText && !submittedPdf && (
         <ContentArea
           title="Threat Intelligence Analysis"
           subtitle="Transform cybersecurity articles and reports into interactive attack flow visualizations"
@@ -921,8 +1092,8 @@ function ThreatFlowApp() {
         </ContentArea>
       )}
 
-      {/* Show streaming visualization when we have content and settings are loaded */}
-      {articleContent && settingsLoaded && (
+      {/* Show streaming visualization when we have content and settings are loaded and on home page */}
+      {currentPage === 'home' && articleContent && settingsLoaded && (
         <ContentArea
           title="Analysis Results"
           subtitle={submittedUrl ? `Analysis of ${submittedUrl}` : 
@@ -959,39 +1130,40 @@ function ThreatFlowApp() {
             </Box>
           }
         >
-          <Suspense fallback={
-            <Box sx={{ py: 4 }}>
-              <GraphSkeleton height="60vh" />
-              <Box sx={{ 
-                textAlign: 'center',
-                mt: 3,
-                maxWidth: '400px',
-                mx: 'auto',
-              }}>
-                <Typography sx={{ 
-                  color: theme.colors.text.primary, 
-                  fontSize: theme.typography.fontSize.lg,
-                  fontFamily: theme.typography.fontFamily.primary,
-                  fontWeight: theme.typography.fontWeight.semibold,
-                  mb: 1,
-                  letterSpacing: theme.typography.letterSpacing.wide,
+          <LazyLoadErrorBoundary componentName="Threat Flow Visualization">
+            <Suspense fallback={
+              <Box sx={{ py: 4 }}>
+                <GraphSkeleton height="60vh" />
+                <Box sx={{
+                  textAlign: 'center',
+                  mt: 3,
+                  maxWidth: '400px',
+                  mx: 'auto',
                 }}>
-                  Initializing ThreatFlow Engine
-                </Typography>
-                <Typography sx={{ 
-                  color: theme.colors.text.tertiary, 
-                  fontSize: theme.typography.fontSize.sm,
-                  fontFamily: theme.typography.fontFamily.mono,
-                  fontWeight: theme.typography.fontWeight.normal,
-                  letterSpacing: theme.typography.letterSpacing.wide,
-                  textTransform: 'uppercase',
-                }}>
-                  🔄 Loading threat analysis modules
-                </Typography>
+                  <Typography sx={{
+                    color: theme.colors.text.primary,
+                    fontSize: theme.typography.fontSize.lg,
+                    fontFamily: theme.typography.fontFamily.primary,
+                    fontWeight: theme.typography.fontWeight.semibold,
+                    mb: 1,
+                    letterSpacing: theme.typography.letterSpacing.wide,
+                  }}>
+                    Initializing ThreatFlow Engine
+                  </Typography>
+                  <Typography sx={{
+                    color: theme.colors.text.tertiary,
+                    fontSize: theme.typography.fontSize.sm,
+                    fontFamily: theme.typography.fontFamily.mono,
+                    fontWeight: theme.typography.fontWeight.normal,
+                    letterSpacing: theme.typography.letterSpacing.wide,
+                    textTransform: 'uppercase',
+                  }}>
+                    🔄 Loading threat analysis modules
+                  </Typography>
+                </Box>
               </Box>
-            </Box>
-          }>
-            <StreamingFlowVisualization 
+            }>
+              <StreamingFlowVisualization 
               url={submittedUrl || submittedText || submittedPdf?.name || ''} 
               pdfFile={submittedPdf || undefined}
               loadedFlow={loadedFlow}
@@ -1035,7 +1207,8 @@ function ThreatFlowApp() {
                 createdAt: new Date(flow.timestamp).toISOString()
               }))}
             />
-          </Suspense>
+            </Suspense>
+          </LazyLoadErrorBoundary>
         </ContentArea>
       )}
 
@@ -1106,66 +1279,82 @@ function ThreatFlowApp() {
         </ResponsiveLayout>
 
         {/* New Search Confirmation Dialog */}
-        <NewSearchDialog
-          open={newSearchDialogOpen}
-          hasUnsavedChanges={hasUnsavedChanges}
-          onClose={handleCancelNewSearch}
-          onConfirm={handleConfirmNewSearch}
-          onSaveFirst={handleSaveFirstNewSearch}
-        />
+        {newSearchDialogOpen && (
+          <LazyLoadErrorBoundary componentName="New Search Dialog">
+            <Suspense fallback={null}>
+              <NewSearchDialog
+                open={newSearchDialogOpen}
+                hasUnsavedChanges={hasUnsavedChanges}
+                onClose={handleCancelNewSearch}
+                onConfirm={handleConfirmNewSearch}
+                onSaveFirst={handleSaveFirstNewSearch}
+              />
+            </Suspense>
+          </LazyLoadErrorBoundary>
+        )}
 
         {/* Save Flow Dialog */}
         {getSaveData && (
-          <Suspense fallback={
-            <Box sx={{ p: 3 }}>
-              <FormSkeleton fields={3} showTitle={true} showButtons={true} />
-            </Box>
-          }>
-            <SaveFlowDialog
-              open={saveFlowDialogOpen}
-              onClose={() => setSaveFlowDialogOpen(false)}
-              nodes={getSaveData().nodes}
-              edges={getSaveData().edges}
-              sourceUrl={submittedUrl}
-              sourceText={submittedText}
-              inputMode={inputMode}
-              viewport={getSaveData().viewport}
-              onSave={handleSaveFlow}
-            />
-          </Suspense>
+          <LazyLoadErrorBoundary componentName="Save Flow Dialog">
+            <Suspense fallback={
+              <Box sx={{ p: 3 }}>
+                <FormSkeleton fields={3} showTitle={true} showButtons={true} />
+              </Box>
+            }>
+              <SaveFlowDialog
+                open={saveFlowDialogOpen}
+                onClose={() => setSaveFlowDialogOpen(false)}
+                nodes={getSaveData().nodes}
+                edges={getSaveData().edges}
+                sourceUrl={submittedUrl}
+                sourceText={submittedText}
+                inputMode={inputMode}
+                viewport={getSaveData().viewport}
+                onSave={handleSaveFlow}
+              />
+            </Suspense>
+          </LazyLoadErrorBoundary>
         )}
 
         {/* Load Flow Dialog */}
-        <Suspense fallback={
-          <Box sx={{ p: 3 }}>
-            <FormSkeleton fields={1} showTitle={true} showButtons={true} />
-          </Box>
-        }>
-          <LoadFlowDialog
-            open={loadFlowDialogOpen}
-            onClose={() => setLoadFlowDialogOpen(false)}
-            onLoad={handleLoadFlow}
-          />
-        </Suspense>
+        <LazyLoadErrorBoundary componentName="Load Flow Dialog">
+          <Suspense fallback={
+            <Box sx={{ p: 3 }}>
+              <FormSkeleton fields={1} showTitle={true} showButtons={true} />
+            </Box>
+          }>
+            <LoadFlowDialog
+              open={loadFlowDialogOpen}
+              onClose={() => setLoadFlowDialogOpen(false)}
+              onLoad={handleLoadFlow}
+            />
+          </Suspense>
+        </LazyLoadErrorBoundary>
 
         {/* Settings Dialog */}
-        <SettingsDialog
-          open={settingsDialogOpen && settingsLoaded}
-          cinematicMode={cinematicMode}
-          edgeColor={edgeColor}
-          edgeStyle={edgeStyle}
-          edgeCurve={edgeCurve}
-          storyModeSpeed={storyModeSpeed}
-          providerSettings={providerSettings}
-          onClose={() => setSettingsDialogOpen(false)}
-          onCinematicModeChange={setCinematicMode}
-          onEdgeColorChange={setEdgeColor}
-          onEdgeStyleChange={setEdgeStyle}
-          onEdgeCurveChange={setEdgeCurve}
-          onStoryModeSpeedChange={setStoryModeSpeed}
-          onProviderSettingsChange={setProviderSettings}
-          onSave={handleSaveSettings}
-        />
+        {settingsDialogOpen && settingsLoaded && (
+          <LazyLoadErrorBoundary componentName="Settings Dialog">
+            <Suspense fallback={null}>
+              <SettingsDialog
+                open={settingsDialogOpen && settingsLoaded}
+                cinematicMode={cinematicMode}
+                edgeColor={edgeColor}
+                edgeStyle={edgeStyle}
+                edgeCurve={edgeCurve}
+                storyModeSpeed={storyModeSpeed}
+                providerSettings={providerSettings}
+                onClose={() => setSettingsDialogOpen(false)}
+                onCinematicModeChange={setCinematicMode}
+                onEdgeColorChange={setEdgeColor}
+                onEdgeStyleChange={setEdgeStyle}
+                onEdgeCurveChange={setEdgeCurve}
+                onStoryModeSpeedChange={setStoryModeSpeed}
+                onProviderSettingsChange={setProviderSettings}
+                onSave={handleSaveSettings}
+              />
+            </Suspense>
+          </LazyLoadErrorBoundary>
+        )}
 
         {/* Command Palette */}
         <CommandPalette

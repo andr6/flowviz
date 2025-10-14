@@ -136,7 +136,7 @@ function clearDensityFromStorage(storageKey: string): void {
  * }
  * ```
  */
-export function DensityProvider({
+export const DensityProvider = React.memo(function DensityProvider({
   children,
   defaultDensity = DEFAULT_DENSITY,
   persistKey = STORAGE_KEY,
@@ -242,7 +242,7 @@ export function DensityProvider({
   );
 
   return <DensityContext.Provider value={value}>{children}</DensityContext.Provider>;
-}
+});
 
 // =====================================================
 // CUSTOM HOOK

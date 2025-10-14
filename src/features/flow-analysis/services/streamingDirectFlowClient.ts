@@ -2,7 +2,11 @@ import { Node, Edge } from 'reactflow';
 
 import { DEFAULT_AI_MODELS, NETWORK } from '../../../shared/constants/AppConstants';
 
-import { APIError } from './errors';
+import { APIError, ValidationError } from './errors';
+import { InputValidator } from './validation/InputValidator';
+import { ProviderValidator } from './validation/ProviderValidator';
+import { StreamStateManager } from './streaming/StreamStateManager';
+import { StreamingJsonParser } from './streaming/StreamingJsonParser';
 
 export interface StreamingDirectFlowCallbacks {
   onNode: (node: Node) => void;
@@ -11,6 +15,12 @@ export interface StreamingDirectFlowCallbacks {
   onIOCAnalysis?: (iocAnalysis: any) => void;
   onComplete: () => void;
   onError: (error: Error) => void;
+}
+
+export interface StreamingOptions {
+  providerSettings?: ProviderSettings;
+  signal?: AbortSignal;
+  timeout?: number;
 }
 
 export interface ProviderSettings {
@@ -34,27 +44,67 @@ export interface ProviderSettings {
 }
 
 export class StreamingDirectFlowClient {
-  private nodeIdMap = new Map<string, string>();
-  private processedNodeIds = new Set<string>();
-  private processedEdgeIds = new Set<string>();
-  private pendingEdges: Array<{edge: Edge, source: string, target: string}> = [];
-  private emittedNodeIds = new Set<string>();
+  private inputValidator: InputValidator;
+  private providerValidator: ProviderValidator;
+  private stateManager: StreamStateManager;
+  private jsonParser: StreamingJsonParser;
 
+  constructor() {
+    this.inputValidator = new InputValidator();
+    this.providerValidator = new ProviderValidator();
+    this.stateManager = new StreamStateManager();
+    this.jsonParser = new StreamingJsonParser(this.stateManager);
+  }
+
+  /**
+   * Extracts and streams attack flow data from various input sources.
+   *
+   * @param input - URL string, PDF File, or raw text to analyze
+   * @param callbacks - Handlers for streaming events (nodes, edges, progress, errors)
+   * @param providerSettings - Optional AI provider configuration (for backwards compatibility)
+   * @param options - Optional streaming options (signal, timeout)
+   * @returns Promise that resolves when extraction is complete
+   * @throws {APIError} If API request fails
+   * @throws {ValidationError} If input is invalid
+   * @throws {NetworkError} If network request fails
+   */
   async extractDirectFlowStreaming(
-    input: string | File, 
+    input: string | File,
     callbacks: StreamingDirectFlowCallbacks,
-    providerSettings?: ProviderSettings
+    providerSettings?: ProviderSettings,
+    options?: StreamingOptions
   ): Promise<void> {
     console.log('=== Starting Streaming Direct Flow Extraction ===');
-    
+
+    // Support both old and new API signatures
+    const finalOptions: StreamingOptions = {
+      providerSettings: options?.providerSettings || providerSettings,
+      signal: options?.signal,
+      timeout: options?.timeout || 60000 // 60 second default timeout
+    };
+
+    // Setup timeout handling
+    let timeoutId: NodeJS.Timeout | undefined;
+    let internalAbortController: AbortController | undefined;
+
     try {
+      // Validate input is not empty
+      if (!input || (typeof input === 'string' && !input.trim())) {
+        throw new ValidationError('Input cannot be empty');
+      }
+
+      // Validate provider settings if provided
+      if (finalOptions.providerSettings) {
+        this.providerValidator.validate(finalOptions.providerSettings);
+      }
+
       // Determine input type
       const isUrl = typeof input === 'string' && (input.startsWith('http://') || input.startsWith('https://'));
       const isPdf = input instanceof File && input.type === 'application/pdf';
-      
+
       const requestBody: any = {
         system: "You are an expert in cyber threat intelligence analysis.",
-        provider: providerSettings || {
+        provider: finalOptions.providerSettings || {
           currentProvider: 'claude',
           claude: { apiKey: '', model: DEFAULT_AI_MODELS.claude },
           ollama: { baseUrl: `http://localhost:${NETWORK.PORTS.DEVELOPMENT.OLLAMA}`, model: DEFAULT_AI_MODELS.ollama },
@@ -64,23 +114,54 @@ export class StreamingDirectFlowClient {
       };
 
       if (isUrl) {
+        // SECURITY: Validate URL before using to prevent SSRF attacks
+        this.inputValidator.validateUrl(input as string);
         requestBody.url = input;
       } else if (isPdf) {
+        // SECURITY: Validate PDF file before processing
+        await this.inputValidator.validatePdf(input as File);
+
         // Convert PDF to base64
         const arrayBuffer = await (input as File).arrayBuffer();
         const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
         requestBody.pdf = base64;
       } else {
-        requestBody.text = input;
+        // Text input
+        const textInput = input as string;
+
+        // Validate text input
+        this.inputValidator.validateText(textInput);
+
+        requestBody.text = textInput;
       }
-      
+
+      // Setup abort controller for cancellation support
+      internalAbortController = new AbortController();
+      const effectiveSignal = finalOptions.signal || internalAbortController.signal;
+
+      // Setup timeout
+      if (finalOptions.timeout) {
+        timeoutId = setTimeout(() => {
+          console.warn(`Request timeout after ${finalOptions.timeout}ms`);
+          internalAbortController?.abort();
+        }, finalOptions.timeout);
+      }
+
+      // Make API request with cancellation support
       const response = await fetch('/api/ai-stream', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
+        signal: effectiveSignal,
       });
+
+      // Clear timeout once we have a response
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = undefined;
+      }
 
       if (!response.ok) {
         throw new APIError(`Failed to stream from AI provider: ${response.statusText}`, response.status);
@@ -115,7 +196,7 @@ export class StreamingDirectFlowClient {
             if (data === '[DONE]') {
               // Only parse and emit if no error occurred
               if (!hasError) {
-                this.parseAndEmitAllNodes(responseText, callbacks);
+                this.jsonParser.parseFinal(callbacks);
                 callbacks.onComplete();
               }
               return;
@@ -146,10 +227,10 @@ export class StreamingDirectFlowClient {
               
               if (event.type === 'content_block_delta' && event.delta?.text) {
                 responseText += event.delta.text;
-                
+
                 // Try to parse nodes as they appear in the stream
-                this.tryParseNodesFromPartial(responseText, callbacks);
-                
+                this.jsonParser.parseChunk(event.delta.text, callbacks);
+
                 // Log progress for debugging
                 if (responseText.includes('"edges"')) {
                   console.log('📊 Edges array detected in stream');
@@ -162,227 +243,19 @@ export class StreamingDirectFlowClient {
         }
       }
     } catch (error) {
-      console.error('❌ Streaming extraction failed:', error);
-      callbacks.onError(error as Error);
-    }
-  }
-
-  private tryParseNodesFromPartial(text: string, callbacks: StreamingDirectFlowCallbacks) {
-    // Look for individual node objects as they appear
-    // Use a more sophisticated approach to handle nested JSON
-    const nodeStartRegex = /\{\s*"id"\s*:\s*"([^"]+)"\s*,\s*"type"\s*:\s*"([^"]+)"\s*,\s*"data"\s*:\s*\{/g;
-    let match;
-    
-    while ((match = nodeStartRegex.exec(text)) !== null) {
-      const nodeId = match[1];
-      const startIndex = match.index;
-      
-      if (!this.processedNodeIds.has(nodeId)) {
-        // Try to find the matching closing braces for the complete node object
-        let braceCount = 0;
-        let inString = false;
-        let escapeNext = false;
-        let endIndex = startIndex;
-        
-        for (let i = startIndex; i < text.length; i++) {
-          const char = text[i];
-          
-          if (escapeNext) {
-            escapeNext = false;
-            continue;
-          }
-          
-          if (char === '\\') {
-            escapeNext = true;
-            continue;
-          }
-          
-          if (char === '"' && !escapeNext) {
-            inString = !inString;
-            continue;
-          }
-          
-          if (!inString) {
-            if (char === '{') {
-              braceCount++;
-            } else if (char === '}') {
-              braceCount--;
-              if (braceCount === 0) {
-                endIndex = i + 1;
-                break;
-              }
-            }
-          }
-        }
-        
-        if (endIndex > startIndex && braceCount === 0) {
-          const nodeStr = text.substring(startIndex, endIndex);
-          
-          try {
-            const node = JSON.parse(nodeStr);
-          
-          // Skip if this is actually an edge (has source and target, or id starts with 'edge')
-          if (node.source && node.target || node.id?.startsWith('edge')) {
-            // Don't log this anymore since it's expected behavior with current Claude
-            return;
-          }
-          
-          this.processedNodeIds.add(nodeId);
-          this.emittedNodeIds.add(nodeId);
-          
-          // Ensure all properties are at the root of data
-          const nodeData = {
-            ...node.data,
-            type: node.type,
-            id: node.id
-          };
-          
-          const flowNode: Node = {
-            id: node.id,
-            type: node.type,
-            data: nodeData,
-            position: { x: 0, y: 0 } // Will be set by Dagre layout
-          };
-          
-          callbacks.onNode(flowNode);
-          console.log(`✨ Streaming node: ${flowNode.id} (${node.data?.tactic_name || node.type})`);
-          
-          // Check if any pending edges can now be emitted
-          this.processPendingEdges(callbacks);
-          } catch (e) {
-            // Node not complete yet
-          }
-        }
-      }
-    }
-    
-    // Look for edge objects as they appear - more flexible regex
-    const edgeRegex = /\{\s*"id"\s*:\s*"([^"]+)"\s*,\s*"source"\s*:\s*"([^"]+)"\s*,\s*"target"\s*:\s*"([^"]+)"[^}]*\}/g;
-    let edgeMatch;
-    
-    while ((edgeMatch = edgeRegex.exec(text)) !== null) {
-      const edgeStr = edgeMatch[0];
-      const edgeId = edgeMatch[1];
-      const sourceId = edgeMatch[2];
-      const targetId = edgeMatch[3];
-      
-      if (!this.processedEdgeIds.has(edgeId)) {
-        try {
-          const edge = JSON.parse(edgeStr);
-          this.processedEdgeIds.add(edgeId);
-          
-          const flowEdge: Edge = {
-            id: edge.id,
-            source: edge.source,
-            target: edge.target,
-            type: 'floating',
-            label: edge.label || ''
-          };
-          
-          // Only emit edge if both nodes exist, otherwise add to pending
-          if (this.emittedNodeIds.has(sourceId) && this.emittedNodeIds.has(targetId)) {
-            callbacks.onEdge(flowEdge);
-            console.log(`🔗 Streaming edge: ${flowEdge.id} (${sourceId} → ${targetId})`);
-          } else {
-            this.pendingEdges.push({ edge: flowEdge, source: sourceId, target: targetId });
-            console.log(`⏳ Pending edge: ${flowEdge.id} (waiting for nodes: ${sourceId}=${this.emittedNodeIds.has(sourceId)}, ${targetId}=${this.emittedNodeIds.has(targetId)})`);
-          }
-        } catch (e) {
-          console.log(`Failed to parse edge: ${edgeStr.substring(0, 50)}...`, e);
-        }
-      }
-    }
-  }
-  
-  private processPendingEdges(callbacks: StreamingDirectFlowCallbacks) {
-    const remainingEdges: typeof this.pendingEdges = [];
-    
-    for (const pending of this.pendingEdges) {
-      if (this.emittedNodeIds.has(pending.source) && this.emittedNodeIds.has(pending.target)) {
-        callbacks.onEdge(pending.edge);
-        console.log(`🔗 Emitting pending edge: ${pending.edge.id} (${pending.source} → ${pending.target})`);
+      // Handle abort errors specifically
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('🛑 Request cancelled by user or timeout');
+        callbacks.onError(new Error('Request was cancelled'));
       } else {
-        remainingEdges.push(pending);
+        console.error('❌ Streaming extraction failed:', error);
+        callbacks.onError(error as Error);
       }
-    }
-    
-    this.pendingEdges = remainingEdges;
-  }
-
-  private parseAndEmitAllNodes(text: string, callbacks: StreamingDirectFlowCallbacks) {
-    try {
-      // Clean the response text and parse the complete JSON
-      const cleanedText = text.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
-      
-      if (!cleanedText) {
-        console.warn('No text to parse for final JSON');
-        return;
+    } finally {
+      // Clean up timeout if still active
+      if (timeoutId) {
+        clearTimeout(timeoutId);
       }
-
-      let json;
-      try {
-        json = JSON.parse(cleanedText);
-      } catch (parseError) {
-        console.error('Failed to parse final response:', parseError);
-        console.log('Raw response text:', text);
-        console.log('Cleaned text:', cleanedText);
-        // Don't throw error, just return as streaming already completed successfully
-        return;
-      }
-      
-      // Process IOC/IOA analysis data if present
-      if (json.ioc_analysis && callbacks.onIOCAnalysis) {
-        console.log('🔍 Processing IOC/IOA analysis data...');
-        callbacks.onIOCAnalysis(json.ioc_analysis);
-      }
-      
-      // Only process any remaining nodes that weren't caught during streaming
-      if (json.nodes && Array.isArray(json.nodes)) {
-        let remainingNodes = 0;
-        json.nodes.forEach((node: any) => {
-          // Skip edges that Claude put in the nodes array (silently, no warnings)
-          if (node.source && node.target) {
-            return;
-          }
-          
-          // Only process nodes not seen yet
-          if (!this.processedNodeIds.has(node.id)) {
-            this.processedNodeIds.add(node.id);
-            this.emittedNodeIds.add(node.id);
-            
-            // Ensure all properties are at the root of data
-            const nodeData = {
-              ...node.data,
-              type: node.type,
-              id: node.id
-            };
-            
-            const flowNode: Node = {
-              id: node.id,
-              type: node.type,
-              data: nodeData,
-              position: { x: 0, y: 0 } // Will be set by Dagre layout
-            };
-            
-            callbacks.onNode(flowNode);
-            console.log(`✨ Final node: ${flowNode.id} (${node.data?.tactic_name || node.type})`);
-            remainingNodes++;
-            
-            // Check pending edges after each node
-            this.processPendingEdges(callbacks);
-          }
-        });
-        
-        if (remainingNodes === 0) {
-          console.log(`✅ All nodes were processed during streaming`);
-        }
-      }
-      
-      // Skip edge processing - all edges are handled during streaming
-      // Process any remaining pending edges one final time
-      this.processPendingEdges(callbacks);
-    } catch (e) {
-      console.error('Failed to parse final response:', e);
     }
   }
 }
